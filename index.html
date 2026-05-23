@@ -3,121 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fish Farming AI</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Fish-farming AI - Feedback Analyzer</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 30px auto; padding: 20px; background-color: #f4f9f4; }
-        .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h1 { color: #1e5631; text-align: center; }
-        label { font-weight: bold; display: block; margin: 10px 0 5px; }
-        /* AI Ventures Step 7: Gabanya uburebure bw'amakadiro yose bibe umurongo umwe */
-        input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; height: 40px; }
-        button { width: 100%; background: #2e7d32; color: white; border: none; padding: 12px; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #1b5e20; }
-        .success { color: green; font-weight: bold; text-align: center; margin-top: 10px; }
-        .error { color: red; font-weight: bold; text-align: center; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background: #e8f5e9; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #1e3d59; text-align: center; }
+        .tabs { display: flex; justify-content: center; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
+        .tab-btn { padding: 10px 20px; border: none; background: none; font-size: 16px; cursor: pointer; color: #555; }
+        .tab-btn.active { color: #1e3d59; border-bottom: 3px solid #1e3d59; font-weight: bold; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #1e3d59; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; margin-top: 10px; }
+        button:hover { background-color: #17b978; }
+        .output-area { background: #f9f9f9; padding: 15px; border-left: 5px solid #17b978; margin-top: 20px; white-space: pre-wrap; min-height: 100px; font-size: 15px; line-height: 1.6; color: #333; }
+        .subtitle { color: #666; font-style: italic; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-    <h1>🐟 Fish Farming AI - Founder's Toolkit</h1>
+<div class="container">
+    <h1>🐟 Fish-farming AI</h1>
     
-    <div class="box">
-        <h3>📝 Leave your Feedback</h3>
-        <form id="trackerForm">
-            <label>Izina ryawe (Name):</label>
-            <input type="text" id="farmerName" required>
-            
-            <label>Inshingano (Role/Type):</label>
-            <select id="farmerType">
-                <option value="interview">Interview</option>
-                <option value="email">Email</option>
-                <option value="fish_farmer">Fish Farmer (Uborozi)</option>
-            </select>
-            
-            <label>Feedback / Ibyifuzo (Umurongo umwe):</label>
-            <input type="text" id="farmerFeedback" required placeholder="Andika ibyifuzo hano...">
-            
-            <button type="submit">Submit Feedback</button>
-        </form>
-        <div id="statusMsg"></div>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('stakeholders')">Stakeholders & Feedback</button>
+        <button class="tab-btn" onclick="switchTab('analyzer')">Feedback Analyzer</button>
     </div>
 
-    <div class="box">
-        <h3>🔐 Administrative Access</h3>
-        <div id="loginSection">
-            <label>Admin Email:</label>
-            <input type="email" id="email" value="admin@crayfish.com">
-            <label>Password:</label>
-            <input type="password" id="password" placeholder="••••••••">
-            <button type="button" id="loginBtn">Login as Admin</button>
+    <div id="stakeholders-tab" class="tab-content active">
+        <h2>Enter Stakeholder Feedback</h2>
+        <div class="form-group">
+            <label for="name">Stakeholder Name:</label>
+            <input type="text" id="name" placeholder="Urugero: Jean d'Amour (Umworozi)">
         </div>
+        <div class="form-group">
+            <label for="feedback">Feedback:</label>
+            <textarea id="feedback" rows="4" placeholder="Urugero: Imvura iyo igwye cyane amazi y'icyandakiramo ahindura pH..."></textarea>
+        </div>
+        <button onclick="saveFeedback()">Save Feedback</button>
+    </div>
+
+    <div id="analyzer-tab" class="tab-content">
+        <h2>Feedback Analyzer</h2>
+        <p class="subtitle">Find patterns across all your feedback</p>
         
-        <div id="adminPanel" style="display:none;">
-            <h4>📋 Stakeholder Feedback Panel</h4>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Feedback</th>
-                    </tr>
-                </thead>
-                <tbody id="dataTable"></tbody>
-            </table>
+        <div class="form-group">
+            <label for="problem">Enter the Core Problem Statement:</label>
+            <textarea id="problem" rows="3" placeholder="Urugero: Aborozi b'ifi bafite ikibazo cy'ihindagurika ry'ubushyuhe n'umwuka mwiza mu mazi..."></textarea>
         </div>
+        <button onclick="saveProblem()" style="background-color: #ffc93c; color: #333;">Save Problem</button>
+        <button onclick="analyzeFeedback()" style="background-color: #17b978;">Analyze All Feedback</button>
+
+        <h3>AI Analysis Results:</h3>
+        <div id="output" class="output-area">Ibisubizo bya Gemini AI bizagaragara hano...</div>
     </div>
+</div>
 
-    <script>
-        const SUPABASE_URL = "https://tmpyghahaktullkfrgtm.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_2g13AFP7w84gv1kqfdYq-w_VPr_5C0d"; 
+<script>
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        
+        if(tabName === 'stakeholders') {
+            document.getElementById('stakeholders-tab').classList.add('active');
+            window.event.target.classList.add('active');
+        } else {
+            document.getElementById('analyzer-tab').classList.add('active');
+            window.event.target.classList.add('active');
+        }
+    }
 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    function saveFeedback() {
+        const name = document.getElementById('name').value;
+        const feedback = document.getElementById('feedback').value;
+        if(!name || !feedback) return alert('Uzuza imyanya yose!');
 
-        document.getElementById('trackerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const statusDiv = document.getElementById('statusMsg');
-            statusDiv.innerHTML = "Processing...";
+        let records = JSON.parse(localStorage.getItem('stakeholderFeedback')) || [];
+        records.push({ name, feedback });
+        localStorage.setItem('stakeholderFeedback', JSON.stringify(records));
+        
+        alert('Feedback ya ' + name + ' yabitswe neza muri LocalStorage!');
+        document.getElementById('name').value = '';
+        document.getElementById('feedback').value = '';
+    }
 
-            const name = document.getElementById('farmerName').value;
-            const type = document.getElementById('farmerType').value;
-            const feedback = document.getElementById('farmerFeedback').value;
+    function saveProblem() {
+        const problem = document.getElementById('problem').value;
+        if(!problem) return alert('Andika ikibazo mberere!');
+        localStorage.setItem('currentProblem', problem);
+        alert('Problem Statement yabitswe neza!');
+    }
 
-            try {
-                const { error } = await supabaseClient
-                    .from('Stakeholders')
-                    .insert([{ name, type, feedback }]);
+    async function analyzeFeedback() {
+        const problem = localStorage.getItem('currentProblem');
+        const feedbackData = JSON.parse(localStorage.getItem('stakeholderFeedback')) || [];
+        const outputDiv = document.getElementById('output');
 
-                if (error) {
-                    statusDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
-                } else {
-                    statusDiv.innerHTML = `<p class="success">🎉 Thank you ${name}! Feedback saved.</p>`;
-                    document.getElementById('trackerForm').reset();
-                }
-            } catch (err) {
-                statusDiv.innerHTML = `<p class="error">Exception: ${err.message}</p>`;
+        if(!problem) return alert('Banza andike ikibazo uze kugibika (Save Problem)!');
+        if(feedbackData.length === 0) return alert('Nta feedback z\'aborozi ziri muri LocalStorage!');
+
+        outputDiv.innerText = "Uyu munuta Gemini irimo isesengura imiyandiko y'aborozi... Tegereza gato...";
+
+        // Hano turahamagara Gemini API directly ivuye kuri Frontend dukoresheje API KEY yawe
+        const apiKey = "AIzaSyDkEZ-O0WQvmZd7O70QN44Ea130XYQyK8M";
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+        const systemInstruction = `You are an expert business analyst. Analyze the stakeholder feedback provided as it relates to the problem and structure your response with the following sections:
+        PATTERNS: What themes appear across multiple sources? (3-5 bullets)
+        SURPRISES: Where sources disagree and what that might mean (3-5 bullets)
+        ASSUMPTIONS TO REVISIT: What assumptions were challenged or proven wrong? (3-5 bullets)
+        RED FLAGS: What concerns or risks surfaced? (3-5 bullets)
+        TOP 3 INSIGHTS: The most important takeaways for your problem (3-5 bullets)`;
+
+        const prompt = `Problem Statement: ${problem}\n\nStakeholder Feedback Data:\n${JSON.stringify(feedbackData, null, 2)}`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: systemInstruction + "\n\n" + prompt }] }],
+                    generationConfig: { temperature: 0.7 }
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.candidates && data.candidates[0].content.parts[0].text) {
+                outputDiv.innerText = data.candidates[0].content.parts[0].text;
+            } else {
+                outputDiv.innerText = "Hari ikibazo cyabaye mu gusoma ibisubizo: " + JSON.stringify(data);
             }
-        });
-
-        document.getElementById('loginBtn').addEventListener('click', async () => {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
-            if(email === "admin@crayfish.com" && pass === "Aiva2026") {
-                document.getElementById('loginSection').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
-                const { data } = await supabaseClient.from('Stakeholders').select('*');
-                const tbody = document.getElementById('dataTable');
-                tbody.innerHTML = '';
-                if(data) {
-                    data.forEach(row => {
-                        tbody.innerHTML += `<tr><td>${row.name}</td><td>${row.type}</td><td>${row.feedback}</td></tr>`;
-                    });
-                }
-            } else { alert("Login failed!"); }
-        });
-    </script>
+        } catch (error) {
+            outputDiv.innerText = "Hari ikibazo cyabaye mu guhamagara Gemini: " + error.message;
+        }
+    }
+</script>
 </body>
 </html>
