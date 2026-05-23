@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fish Farming AI</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 30px auto; padding: 20px; background-color: #f4f9f4; }
+        .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1 { color: #1e5631; text-align: center; }
+        label { font-weight: bold; display: block; margin: 10px 0 5px; }
+        /* AI Ventures Step 7: Gabanya uburebure bw'amakadiro yose bibe umurongo umwe */
+        input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; height: 40px; }
+        button { width: 100%; background: #2e7d32; color: white; border: none; padding: 12px; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #1b5e20; }
+        .success { color: green; font-weight: bold; text-align: center; margin-top: 10px; }
+        .error { color: red; font-weight: bold; text-align: center; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #e8f5e9; }
+    </style>
+</head>
+<body>
+
+    <h1>🐟 Fish Farming AI - Founder's Toolkit</h1>
+    
+    <div class="box">
+        <h3>📝 Leave your Feedback</h3>
+        <form id="trackerForm">
+            <label>Izina ryawe (Name):</label>
+            <input type="text" id="farmerName" required>
+            
+            <label>Inshingano (Role/Type):</label>
+            <select id="farmerType">
+                <option value="interview">Interview</option>
+                <option value="email">Email</option>
+                <option value="fish_farmer">Fish Farmer (Uborozi)</option>
+            </select>
+            
+            <label>Feedback / Ibyifuzo (Umurongo umwe):</label>
+            <input type="text" id="farmerFeedback" required placeholder="Andika ibyifuzo hano...">
+            
+            <button type="submit">Submit Feedback</button>
+        </form>
+        <div id="statusMsg"></div>
+    </div>
+
+    <div class="box">
+        <h3>🔐 Administrative Access</h3>
+        <div id="loginSection">
+            <label>Admin Email:</label>
+            <input type="email" id="email" value="admin@crayfish.com">
+            <label>Password:</label>
+            <input type="password" id="password" placeholder="••••••••">
+            <button type="button" id="loginBtn">Login as Admin</button>
+        </div>
+        
+        <div id="adminPanel" style="display:none;">
+            <h4>📋 Stakeholder Feedback Panel</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Feedback</th>
+                    </tr>
+                </thead>
+                <tbody id="dataTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://tmpyghahaktullkfrgtm.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_2g13AFP7w84gv1kqfdYq-w_VPr_5C0d"; 
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.getElementById('trackerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const statusDiv = document.getElementById('statusMsg');
+            statusDiv.innerHTML = "Processing...";
+
+            const name = document.getElementById('farmerName').value;
+            const type = document.getElementById('farmerType').value;
+            const feedback = document.getElementById('farmerFeedback').value;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('Stakeholders')
+                    .insert([{ name, type, feedback }]);
+
+                if (error) {
+                    statusDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                } else {
+                    statusDiv.innerHTML = `<p class="success">🎉 Thank you ${name}! Feedback saved.</p>`;
+                    document.getElementById('trackerForm').reset();
+                }
+            } catch (err) {
+                statusDiv.innerHTML = `<p class="error">Exception: ${err.message}</p>`;
+            }
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            if(email === "admin@crayfish.com" && pass === "Aiva2026") {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                const { data } = await supabaseClient.from('Stakeholders').select('*');
+                const tbody = document.getElementById('dataTable');
+                tbody.innerHTML = '';
+                if(data) {
+                    data.forEach(row => {
+                        tbody.innerHTML += `<tr><td>${row.name}</td><td>${row.type}</td><td>${row.feedback}</td></tr>`;
+                    });
+                }
+            } else { alert("Login failed!"); }
+        });
+    </script>
+</body>
+</html>
