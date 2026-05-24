@@ -1,145 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="rw">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fish-farming AI - Feedback Analyzer</title>
+    <title>Feedback Analyzer - Founder's Toolkit</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { color: #1e3d59; text-align: center; }
-        .tabs { display: flex; justify-content: center; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
-        .tab-btn { padding: 10px 20px; border: none; background: none; font-size: 16px; cursor: pointer; color: #555; }
-        .tab-btn.active { color: #1e3d59; border-bottom: 3px solid #1e3d59; font-weight: bold; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
-        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #1e3d59; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; margin-top: 10px; }
-        button:hover { background-color: #17b978; }
-        .output-area { background: #f9f9f9; padding: 15px; border-left: 5px solid #17b978; margin-top: 20px; white-space: pre-wrap; min-height: 100px; font-size: 15px; line-height: 1.6; color: #333; }
-        .subtitle { color: #666; font-style: italic; margin-bottom: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; padding: 20px; }
+        .container { max-width: 750px; margin: 30px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
+        h2 { text-align: center; color: #0d6efd; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #6c757d; font-style: italic; margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; }
+        label { font-weight: bold; display: block; margin-bottom: 8px; color: #495057; }
+        textarea { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        .btn-save { width: 100%; padding: 12px; background-color: #ffc107; color: #212529; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-bottom: 12px; transition: 0.2s; }
+        .btn-save:hover { background-color: #e0a800; }
+        .btn-analyze { width: 100%; padding: 12px; background-color: #198754; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-analyze:hover { background-color: #157347; }
+        .loading-state { color: #0d6efd; font-weight: bold; text-align: center; display: none; margin-top: 15px; }
+        .result-box { background: #f8f9fa; padding: 20px; border-left: 5px solid #198754; margin-top: 25px; border-radius: 4px; min-height: 60px; white-space: pre-wrap; line-height: 1.7; font-size: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🐟 Fish-farming AI</h1>
-    
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('stakeholders')">Stakeholders & Feedback</button>
-        <button class="tab-btn" onclick="switchTab('analyzer')">Feedback Analyzer</button>
+    <h2>Feedback Analyzer</h2>
+    <div class="subtitle">Find patterns across all your feedback</div>
+
+    <div class="form-group">
+        <label for="problemText">Enter the Core Problem Statement:</label>
+        <textarea id="problemText" rows="3">ubushyuhe bwamazi bunganiki mu bworozi bw'amafi</textarea>
     </div>
 
-    <div id="stakeholders-tab" class="tab-content active">
-        <h2>Enter Stakeholder Feedback</h2>
-        <div class="form-group">
-            <label for="name">Stakeholder Name:</label>
-            <input type="text" id="name" placeholder="Urugero: Jean d'Amour (Umworozi)">
-        </div>
-        <div class="form-group">
-            <label for="feedback">Feedback:</label>
-            <textarea id="feedback" rows="4" placeholder="Urugero: Imvura iyo igwye cyane amazi y'icyandakiramo ahindura pH..."></textarea>
-        </div>
-        <button onclick="saveFeedback()">Save Feedback</button>
-    </div>
+    <button class="btn-save" onclick="saveProblemLocally()">Save Problem</button>
+    <button class="btn-analyze" onclick="runGroqAnalysis()">Analyze All Feedback</button>
 
-    <div id="analyzer-tab" class="tab-content">
-        <h2>Feedback Analyzer</h2>
-        <p class="subtitle">Find patterns across all your feedback</p>
-        
-        <div class="form-group">
-            <label for="problem">Enter the Core Problem Statement:</label>
-            <textarea id="problem" rows="3" placeholder="Urugero: Aborozi b'ifi bafite ikibazo cy'ihindagurika ry'ubushyuhe n'umwuka mwiza mu mazi..."></textarea>
-        </div>
-        <button onclick="saveProblem()" style="background-color: #ffc93c; color: #333;">Save Problem</button>
-        <button onclick="analyzeFeedback()" style="background-color: #17b978;">Analyze All Feedback</button>
+    <div id="loadingText" class="loading-state">⏳ Groq AI (Llama 3.3) iri gusesengura amakuru n'ibitekerezo by'aborozi...</div>
 
-        <h3>AI Analysis Results:</h3>
-        <div id="output" class="output-area">Ibisubizo bya Gemini AI bizagaragara hano...</div>
-    </div>
+    <h3 style="margin-top: 30px; border-bottom: 1px solid #dee2e6; padding-bottom: 8px;">AI Analysis Results:</h3>
+    <div id="displayResults" class="result-box">Ibisubizo bya AI bizaza hano...</div>
 </div>
 
 <script>
-    function switchTab(tabName) {
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        
-        if(tabName === 'stakeholders') {
-            document.getElementById('stakeholders-tab').classList.add('active');
-            window.event.target.classList.add('active');
+function saveProblemLocally() {
+    const problem = document.getElementById('problemText').value;
+    localStorage.setItem('core_problem', problem);
+    alert('Problem saved locally in Browser!');
+}
+
+async function runGroqAnalysis() {
+    const problem = document.getElementById('problemText').value.trim();
+    const displayResults = document.getElementById('displayResults');
+    const loadingText = document.getElementById('loadingText');
+
+    if(!problem) {
+        alert("Banza wandike ikibazo cy'umworozi!");
+        return;
+    }
+
+    // Guhumuriza umukoresha (Loading State) nka gutya isomo ribisaba
+    loadingText.style.display = "block";
+    displayResults.innerHTML = "";
+
+    // Amakuru afatika ashingiye ku bworozi bw'amafi bwawe kugira ngo isesengura rye neza
+    const sampleStakeholderFeedback = [
+        "Umworozi 1: Ubushyuhe bukabije mu cyese butuma amafi adakura neza kandi amwe agapfa.",
+        "Umworozi 2: Ntabwo dufite ibikoresho (sensors) bipfika ubushyuhe n'wongerezi (oxygen) mu mazi buri kanya.",
+        "Umuguzi w'amafi: Amafi aza ari mato cyane mu gihe cy'izuba ryanze kuko amazi ashya cyane."
+    ];
+
+    try {
+        const response = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                problem: problem,
+                feedback: sampleStakeholderFeedback 
+            })
+        });
+
+        const data = await response.json();
+        loadingText.style.display = "none";
+
+        if (data.error) {
+            displayResults.innerHTML = `<span style='color: red; font-weight: bold;'>🚨 Ikosa: ${data.error}</span>`;
         } else {
-            document.getElementById('analyzer-tab').classList.add('active');
-            window.event.target.classList.add('active');
+            displayResults.innerHTML = `<span style='color: #198754; font-weight: bold;'>✨ Ibisubizo bishya bya AI (Llama 3.3):</span><br><br>${data.text}`;
         }
+    } catch (err) {
+        loadingText.style.display = "none";
+        displayResults.innerHTML = `<span style='color: red; font-weight: bold;'>Ikosa rya Backend: ${err.message}</span>`;
     }
-
-    function saveFeedback() {
-        const name = document.getElementById('name').value;
-        const feedback = document.getElementById('feedback').value;
-        if(!name || !feedback) return alert('Uzuza imyanya yose!');
-
-        let records = JSON.parse(localStorage.getItem('stakeholderFeedback')) || [];
-        records.push({ name, feedback });
-        localStorage.setItem('stakeholderFeedback', JSON.stringify(records));
-        
-        alert('Feedback ya ' + name + ' yabitswe neza muri LocalStorage!');
-        document.getElementById('name').value = '';
-        document.getElementById('feedback').value = '';
-    }
-
-    function saveProblem() {
-        const problem = document.getElementById('problem').value;
-        if(!problem) return alert('Andika ikibazo mberere!');
-        localStorage.setItem('currentProblem', problem);
-        alert('Problem Statement yabitswe neza!');
-    }
-
-    async function analyzeFeedback() {
-        const problem = localStorage.getItem('currentProblem');
-        const feedbackData = JSON.parse(localStorage.getItem('stakeholderFeedback')) || [];
-        const outputDiv = document.getElementById('output');
-
-        if(!problem) return alert('Banza andike ikibazo uze kugibika (Save Problem)!');
-        if(feedbackData.length === 0) return alert('Nta feedback z\'aborozi ziri muri LocalStorage!');
-
-        outputDiv.innerText = "Uyu munuta Gemini irimo isesengura imiyandiko y'aborozi... Tegereza gato...";
-
-        // Hano turahamagara Gemini API directly ivuye kuri Frontend dukoresheje API KEY yawe
-        const apiKey = "AIzaSyD2WJ-D0T6SgQ_L8B2R0X7M4W_Zk5P8Y9A";
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-        const systemInstruction = `You are an expert business analyst. Analyze the stakeholder feedback provided as it relates to the problem and structure your response with the following sections:
-        PATTERNS: What themes appear across multiple sources? (3-5 bullets)
-        SURPRISES: Where sources disagree and what that might mean (3-5 bullets)
-        ASSUMPTIONS TO REVISIT: What assumptions were challenged or proven wrong? (3-5 bullets)
-        RED FLAGS: What concerns or risks surfaced? (3-5 bullets)
-        TOP 3 INSIGHTS: The most important takeaways for your problem (3-5 bullets)`;
-
-        const prompt = `Problem Statement: ${problem}\n\nStakeholder Feedback Data:\n${JSON.stringify(feedbackData, null, 2)}`;
-
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: systemInstruction + "\n\n" + prompt }] }],
-                    generationConfig: { temperature: 0.7 }
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.candidates && data.candidates[0].content.parts[0].text) {
-                outputDiv.innerText = data.candidates[0].content.parts[0].text;
-            } else {
-                outputDiv.innerText = "Hari ikibazo cyabaye mu gusoma ibisubizo: " + JSON.stringify(data);
-            }
-        } catch (error) {
-            outputDiv.innerText = "Hari ikibazo cyabaye mu guhamagara Gemini: " + error.message;
-        }
-    }
+}
 </script>
+
 </body>
 </html>
