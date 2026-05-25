@@ -13,18 +13,23 @@
         .subtitle { color: #555; margin-top: 5px; font-weight: 500; }
         select.lang-select { padding: 8px 12px; border-radius: 6px; border: 2px solid #0d47a1; font-weight: bold; background: white; color: #0d47a1; cursor: pointer; }
 
-        /* Agace k'Umutekano n'Ubwishyu (Paywall Card) */
-        .auth-section { background: #fff3e0; border: 2px dashed #ff9800; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(230,81,0,0.05); }
-        .payment-info { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ffe0b2; margin-bottom: 15px; text-align: left; font-size: 15px; line-height: 1.5; color: #e65100; }
-        .auth-section input { padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid #ccc; width: 60%; max-width: 300px; text-align: center; font-weight: bold; }
-        .btn-auth { background: #e65100; color: white; border: none; padding: 12px 25px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-left: 10px; }
+        /* Paywall Card */
+        .auth-section { background: #fff3e0; border: 2px dashed #ff9800; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 25px; }
+        .register-box { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ffe0b2; margin-bottom: 15px; text-align: left; }
+        .register-box input { width: 90%; padding: 10px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        
+        .auth-section input.code-input { padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid #ccc; width: 60%; max-width: 300px; text-align: center; font-weight: bold; }
+        .btn-auth { background: #e65100; color: white; border: none; padding: 12px 25px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
         .btn-auth:hover { background: #b33f00; }
+        .btn-reg { background: #0d47a1; color: white; border: none; padding: 10px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; }
+        
+        .success-box { background: #e8f5e9; border: 1px solid #a5d6a7; color: #1b5e20; padding: 15px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; display: none; text-align: left; }
 
-        /* Blur Effect ikingira sensors niba umuntu atarishyura */
+        /* Blur Content */
         .protected-content { filter: blur(5px); pointer-events: none; opacity: 0.4; transition: all 0.5s ease; }
         .unlocked { filter: none !important; pointer-events: auto !important; opacity: 1 !important; }
 
-        /* Miterere y'Ibyese (Cards) */
+        /* Sensor Cards Map */
         .monitor-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
         .sensor-card { background: #eef2f7; padding: 25px 15px; border-radius: 12px; text-align: center; border: 1px solid #cfd8dc; }
         .sensor-card h3 { margin: 0 0 15px 0; color: #37474f; font-size: 16px; font-weight: 600; }
@@ -61,17 +66,22 @@
     </div>
 
     <div id="authBox" class="auth-section">
-        <h3 id="auth-title">🔐 Injiza Access Code wahawe na Patrick</h3>
+        <h3 id="auth-title">🔐 Kwiyandikisha n'Ubwishyu bwikora</h3>
         
-        <div id="payment-guide" class="payment-info">
-            <strong>💳 Uburyo bwo Kwishura / Payment Guide:</strong><br>
-            • Kwishura ni Frw 5,000 ku kwezi. Yishyura ukoresheje MoMo Pay kuri Merchant Code: <strong>*182*8*1*XXXXXX#</strong>.<br>
-            • Nyuma yo kwishyura, ohereza ubutumwa kuri WhatsApp cyangwa SMS kuri <strong>+250 78X XXX XXX</strong> (Patrick) ngo uhite uhabwa Access Code yawe kano kanya.
+        <div id="regForm" class="register-box">
+            <strong style="color: #e65100;">🆕 Niba uri umworozi mushya, iyandikishe hano:</strong><br>
+            <label style="font-size: 13px; font-weight: bold; margin-top: 5px; display:block;">Izina ryawe / Full Name:</label>
+            <input type="text" id="regName" placeholder="Urugero: John Doe">
+            <button class="btn-reg" onclick="registerUser()">Kwiraho & Kwakira Access Code</button>
         </div>
 
-        <input type="text" id="accessCodeInput" placeholder="Ugereranyo: PREMIUM_2026">
+        <div id="successBox" class="success-box"></div>
+
+        <p id="auth-desc" style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Injiza Access Code yawe hano alapfa kwinjira:</p>
+        <input type="text" id="accessCodeInput" class="code-input" placeholder="Ugereranyo: PATRICK-XXXX">
+        <br>
         <button class="btn-auth" onclick="verifyAccessCode()">Fungura / Unlock</button>
-        <div id="authError" style="color: red; font-weight: bold; margin-top: 10px; display: none;">❌ Code ntabwo ari yo! Andikira Patrick akwemerere.</div>
+        <div id="authError" style="color: red; font-weight: bold; margin-top: 10px; display: none;">❌ Code ntabwo ari yo! Gerageza andi magambo cyangwa wiyandikishe.</div>
     </div>
 
     <div id="protectedContent" class="protected-content">
@@ -127,9 +137,8 @@ const translations = {
         btnLesson: "📚 Lifatire Isomo ry'Ubworozi (Training Lesson)",
         lblResults: "✨ Umusaruro n'Ibutsa bya AI (Real-Time Analysis):",
         aiThinking: "⏳ Llama 3.3 AI iri gusesengura amakuru mu Kinyarwanda...",
-        authTitle: "🔐 Injiza Access Code wahawe na Patrick",
-        authWrong: "❌ Code ntabwo ari yo! Andikira Patrick akwemerere.",
-        payGuide: "<strong>💳 Uburyo bwo Kwishura:</strong><br>• Kwishura ni Frw 5,000 ku kwezi. Yishyura ukoresheje MoMo Pay kuri Merchant Code: <strong>*182*8*1*XXXXXX#</strong>.<br>• Nyuma yo kwishyura, ohereza ubutumwa kuri WhatsApp cyangwa SMS kuri <strong>+250 78X XXX XXX</strong> (Patrick) ngo uhite uhabwa Access Code yawe kano kanya."
+        authTitle: "🔐 Kwiyandikisha n'Ubwishyu bwikora",
+        authWrong: "❌ Code ntabwo ari yo! Gerageza andi magambo cyangwa wiyandikishe."
     },
     en: {
         title: "Nyamasheke Smart Monitor AI 🐟",
@@ -143,9 +152,8 @@ const translations = {
         btnLesson: "📚 Take Fish Farming Training Lesson",
         lblResults: "✨ AI Insights & Training Results (Real-Time Analysis):",
         aiThinking: "⏳ Llama 3.3 AI is analyzing data in English...",
-        authTitle: "🔐 Enter Access Code provided by Patrick",
-        authWrong: "❌ Invalid Code! Please contact Patrick for subscription permission.",
-        payGuide: "<strong>💳 Payment Guide:</strong><br>• Subscription cost is Frw 5,000 per month. Pay via MoMo Pay Merchant Code: <strong>*182*8*1*XXXXXX#</strong>.<br>• After payment, send confirmation via WhatsApp or SMS to <strong>+250 78X XXX XXX</strong> (Patrick) to receive your access code immediately."
+        authTitle: "🔐 Self-Registration & Automatic Access",
+        authWrong: "❌ Invalid Code! Please try again or register above."
     }
 };
 
@@ -162,8 +170,34 @@ function changeLanguage() {
     document.getElementById('btn-lesson').innerText = t.btnLesson;
     document.getElementById('lbl-results').innerText = t.lblResults;
     document.getElementById('auth-title').innerText = t.authTitle;
-    document.getElementById('payment-guide').innerHTML = t.payGuide;
     updateLiveSensors();
+}
+
+// FUNKTION YO KWIYANDIKISHA YIKORA (Self-Registration)
+async function registerUser() {
+    const name = document.getElementById('regName').value;
+    if (!name) {
+        alert("Andika izina ryawe rwose!");
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            const successBox = document.getElementById('successBox');
+            successBox.innerHTML = `🎉 Murakoze kwiyandikisha ${name}!<br>🔑 Code yawe yo kwinjira ni: <strong style="font-size: 18px; color:#1b5e20;">${data.code}</strong><br>• Koresha iyi code hasi ngo ufungure porogaramu.`;
+            successBox.style.display = 'block';
+            document.getElementById('regForm').style.display = 'none'; // Hisha ifomu y'izina
+        }
+    } catch (e) {
+        alert("Error creating code.");
+    }
 }
 
 async function verifyAccessCode() {
@@ -220,34 +254,6 @@ function updateLiveSensors() {
 }
 
 setInterval(updateLiveSensors, 4000);
-
-async function triggerAI(type) {
-    if (!isUnlocked) return;
-    const displayResults = document.getElementById('displayResults');
-    displayResults.innerHTML = translations[currentLang].aiThinking;
-
-    try {
-        const response = await fetch('/api/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                oxygen: currentOxygen, 
-                ph: currentPh, 
-                temp: currentTemp,
-                serviceType: type,
-                lang: currentLang
-            })
-        });
-        const data = await response.json();
-        if (data.error) {
-            displayResults.innerHTML = `🚨 Error: ${data.error}`;
-        } else {
-            displayResults.innerHTML = `<pre>${data.text}</pre>`;
-        }
-    } catch (err) {
-        displayResults.innerHTML = `🚨 Backend Error: ${err.message}`;
-    }
-}
 </script>
 
 </body>
