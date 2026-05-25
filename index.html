@@ -29,7 +29,7 @@
         .protected-content { filter: blur(5px); pointer-events: none; opacity: 0.4; transition: all 0.5s ease; }
         .unlocked { filter: none !important; pointer-events: auto !important; opacity: 1 !important; }
 
-        /* Sensor Cards Map */
+        /* Sensor Cards (Miterere ihamye) */
         .monitor-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
         .sensor-card { background: #eef2f7; padding: 25px 15px; border-radius: 12px; text-align: center; border: 1px solid #cfd8dc; }
         .sensor-card h3 { margin: 0 0 15px 0; color: #37474f; font-size: 16px; font-weight: 600; }
@@ -38,6 +38,10 @@
         
         .status-bar { text-align: center; font-weight: bold; color: #2e7d32; margin-bottom: 20px; background: #e8f5e9; padding: 12px; border-radius: 8px; border: 1px solid #c8e6c9; }
         
+        /* Box y'integuza nshya ku gushyira amaso */
+        .alert-popup-box { background: #ffebee; border: 2px solid #ef5350; color: #b71c1c; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; display: none; animation: shake 0.5s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+
         .action-box { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
         .btn-action { color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: background 0.3s; text-align: center; }
         .btn-green { background-color: #2e7d32; }
@@ -85,6 +89,9 @@
     </div>
 
     <div id="protectedContent" class="protected-content">
+        
+        <div id="liveAlertPopup" class="alert-popup-box"></div>
+
         <div class="monitor-box">
             <div class="sensor-card">
                 <h3 id="lbl-oxygen">DO (Oxygen)</h3>
@@ -138,7 +145,10 @@ const translations = {
         lblResults: "✨ Umusaruro n'Ibutsa bya AI (Real-Time Analysis):",
         aiThinking: "⏳ Llama 3.3 AI iri gusesengura amakuru mu Kinyarwanda...",
         authTitle: "🔐 Kwiyandikisha n'Ubwishyu bwikora",
-        authWrong: "❌ Code ntabwo ari yo! Gerageza andi magambo cyangwa wiyandikishe."
+        authWrong: "❌ Code ntabwo ari yo! Gerageza andi magambo cyangwa wiyandikishe.",
+        alertOxygen: "🚨 ICYAGO CY'IJORO: Oxygen yamanutse cyane munsi ya 4.0 mg/L! Amafi ashobora gupfa kubera kubura umwuka. Koresha Aerator kano kanya!",
+        alertPh: "🚨 WARNING: pH y'amazi ntabwo ikwiye (Munsi ya 6.5 cyangwa yarenze 8.5)! Shira amazi meza mu cyese.",
+        alertTemp: "🚨 WARNING: Ubushyuhe bwazamutse cyane cyangwa bwamanutse (Kuva kuri 20°C - 30°C)! Genclura ibyese kano kanya."
     },
     en: {
         title: "Nyamasheke Smart Monitor AI 🐟",
@@ -153,7 +163,10 @@ const translations = {
         lblResults: "✨ AI Insights & Training Results (Real-Time Analysis):",
         aiThinking: "⏳ Llama 3.3 AI is analyzing data in English...",
         authTitle: "🔐 Self-Registration & Automatic Access",
-        authWrong: "❌ Invalid Code! Please try again or register above."
+        authWrong: "❌ Invalid Code! Please try again or register above.",
+        alertOxygen: "🚨 CRITICAL ALERT: Dissolved Oxygen dropped below 4.0 mg/L! Fish are at risk of suffocation. Turn on aerators immediately!",
+        alertPh: "🚨 WARNING: Water pH level is unstable (Below 6.5 or above 8.5)! Check water source immediately.",
+        alertTemp: "🚨 WARNING: Extreme Water Temperature detected (Outside 20°C - 30°C)! Monitor pond environment right now."
     }
 };
 
@@ -173,14 +186,9 @@ function changeLanguage() {
     updateLiveSensors();
 }
 
-// FUNKTION YO KWIYANDIKISHA YIKORA (Self-Registration)
 async function registerUser() {
     const name = document.getElementById('regName').value;
-    if (!name) {
-        alert("Andika izina ryawe rwose!");
-        return;
-    }
-    
+    if (!name) { alert("Andika izina ryawe rwose!"); return; }
     try {
         const response = await fetch('/api/register', {
             method: 'POST',
@@ -188,22 +196,18 @@ async function registerUser() {
             body: JSON.stringify({ name: name })
         });
         const data = await response.json();
-        
         if (data.success) {
             const successBox = document.getElementById('successBox');
             successBox.innerHTML = `🎉 Murakoze kwiyandikisha ${name}!<br>🔑 Code yawe yo kwinjira ni: <strong style="font-size: 18px; color:#1b5e20;">${data.code}</strong><br>• Koresha iyi code hasi ngo ufungure porogaramu.`;
             successBox.style.display = 'block';
-            document.getElementById('regForm').style.display = 'none'; // Hisha ifomu y'izina
+            document.getElementById('regForm').style.display = 'none';
         }
-    } catch (e) {
-        alert("Error creating code.");
-    }
+    } catch (e) { alert("Error creating code."); }
 }
 
 async function verifyAccessCode() {
     const code = document.getElementById('accessCodeInput').value;
     const errorDiv = document.getElementById('authError');
-    
     try {
         const response = await fetch('/api/verify-code', {
             method: 'POST',
@@ -211,7 +215,6 @@ async function verifyAccessCode() {
             body: JSON.stringify({ code: code })
         });
         const data = await response.json();
-
         if (data.success) {
             isUnlocked = true;
             errorDiv.style.display = 'none';
@@ -222,18 +225,15 @@ async function verifyAccessCode() {
             errorDiv.innerText = translations[currentLang].authWrong;
             errorDiv.style.display = 'block';
         }
-    } catch (e) {
-        errorDiv.innerText = "Error communicating with server.";
-        errorDiv.style.display = 'block';
-    }
+    } catch (e) { errorDiv.innerText = "Error communicating with server."; errorDiv.style.display = 'block'; }
 }
 
 function updateLiveSensors() {
     if (!isUnlocked) return;
 
-    currentOxygen = (Math.random() * (6.5 - 3.8) + 3.8).toFixed(1);
-    currentPh = (Math.random() * (8.2 - 5.8) + 5.8).toFixed(1);
-    currentTemp = (Math.random() * (28.0 - 23.0) + 23.0).toFixed(1);
+    currentOxygen = (Math.random() * (6.5 - 3.5) + 3.5).toFixed(1);
+    currentPh = (Math.random() * (9.0 - 5.5) + 5.5).toFixed(1);
+    currentTemp = (Math.random() * (32.0 - 18.0) + 18.0).toFixed(1);
 
     document.getElementById('live-oxygen').innerText = currentOxygen;
     document.getElementById('live-ph').innerText = currentPh;
@@ -241,12 +241,22 @@ function updateLiveSensors() {
 
     const t = translations[currentLang];
     const statusBar = document.getElementById('monitor-status');
+    const alertPopup = document.getElementById('liveAlertPopup');
 
-    if (currentOxygen < 4.5 || currentPh < 6.0) {
+    let alertMessages = [];
+
+    if (currentOxygen < 4.0) { alertMessages.push(t.alertOxygen); }
+    if (currentPh < 6.5 || currentPh > 8.5) { alertMessages.push(t.alertPh); }
+    if (currentTemp < 20.0 || currentTemp > 30.0) { alertMessages.push(t.alertTemp); }
+
+    if (alertMessages.length > 0) {
+        alertPopup.innerHTML = alertMessages.join("<br><br>");
+        alertPopup.style.display = "block";
         statusBar.innerHTML = t.statusBad;
         statusBar.style.background = "#ffebee";
         statusBar.style.color = "#c62828";
     } else {
+        alertPopup.style.display = "none";
         statusBar.innerHTML = t.statusGood;
         statusBar.style.background = "#e8f5e9";
         statusBar.style.color = "#2e7d32";
@@ -254,6 +264,34 @@ function updateLiveSensors() {
 }
 
 setInterval(updateLiveSensors, 4000);
+
+async function triggerAI(type) {
+    if (!isUnlocked) return;
+    const displayResults = document.getElementById('displayResults');
+    displayResults.innerHTML = translations[currentLang].aiThinking;
+
+    try {
+        const response = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                oxygen: currentOxygen, 
+                ph: currentPh, 
+                temp: currentTemp,
+                serviceType: type,
+                lang: currentLang
+            })
+        });
+        const data = await response.json();
+        if (data.error) {
+            displayResults.innerHTML = `🚨 Error: ${data.error}`;
+        } else {
+            displayResults.innerHTML = `<pre>${data.text}</pre>`;
+        }
+    } catch (err) {
+        displayResults.innerHTML = `🚨 Backend Error: ${err.message}`;
+    }
+}
 </script>
 
 </body>
