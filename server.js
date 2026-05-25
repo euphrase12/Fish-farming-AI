@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { Groq } from 'groq-sdk';
 import dotenv from 'dotenv';
+import nodemailer from 'nodemailer'; // Ikoreshwa mu kohereza email bwikora
 
 dotenv.config();
 
@@ -13,22 +14,43 @@ app.use(express.static('./'));
 const activeApiKey = process.env.GROQ_API_KEY;
 const groq = new Groq({ apiKey: activeApiKey });
 
-// Urutonde rw'amakode rurimo n'ay'ukuri Boss akoresha
+// Urutonde rw'amakode azewe
 let VALID_ACCESS_CODES = ["PREMIUM_2026", "NYAMASHEKE_FISH_AI", "PATRICK_BOSS"];
 
-// Endpoint nshya yo KWIRAHOM (Self-Registration API)
+// ⚙️ SYSTEM YO KOHEREZA EMAIL (Ubu buryo bwikora niba hari ikibazo)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'patricksmartfarm@gmail.com', // Shira hano Email yawe ya Gmail
+        pass: 'your-app-password' // Shira hano Password y'ikoranabuhanga (Gmail App Password)
+    }
+});
+
+// Uburyo bwo kohereza Email mu mutekano
+function sendEmailAlert(subject, messageText) {
+    const mailOptions = {
+        from: 'patricksmartfarm@gmail.com',
+        to: 'manirafashapatrick@gmail.com', // Email y'umworozi cg iyawe Boss ngo itake
+        subject: subject,
+        text: messageText
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log("[Email Error] " + error);
+        } else {
+            console.log("[Email Sent] Alert notification dispatched: " + info.response);
+        }
+    });
+}
+
+// Endpoint y'iyandikisha
 app.post('/api/register', (req, res) => {
     const { name } = req.body;
-    
-    // Remba code yikora ishingiye ku izina (urugero: PATRICK-4821)
     const cleanName = name.replace(/\s+/g, '').toUpperCase().substring(0, 7);
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
     const generatedCode = `${cleanName}-${randomNumber}`;
-
-    // Yongere mu rutonde rw'izewe ako kanya!
     VALID_ACCESS_CODES.push(generatedCode);
-
-    console.log(`[Self-Reg] New code created: ${generatedCode} for ${name}`);
     res.json({ success: true, code: generatedCode });
 });
 
@@ -41,42 +63,35 @@ app.post('/api/verify-code', (req, res) => {
     }
 });
 
+// KUGENZURA NO KOHEREZA INTEGUZA BIKORESHEJE AI N'AMAKURU YA SENSORS
 app.post('/api/analyze', async (req, res) => {
     try {
         const { oxygen, ph, temp, serviceType, lang } = req.body;
-        let systemPrompt = "";
+        
+        // 🚨 KORA CHECK Y'IKITUGUZA KANO KANYA MBERE YO KOHEREZA KURI AI
+        if (oxygen < 4.0 || ph < 6.5 || ph > 8.5 || temp < 20.0 || temp > 30.0) {
+            let alertContent = `URGENT FISHPOND ALERT!\n\nIbipimo by'amazi byageze mu gace kabi cyane:\n- Oxygen: ${oxygen} mg/L\n- pH: ${ph}\n- Ubushyuhe: ${temp} °C\n\nTabara kano kanya uhindure amazi cyangwa ufore Aerator ngo amafi atapfa!`;
+            
+            // Kohereza email bwikora
+            sendEmailAlert("⚠️ Nyamasheke Smart Monitor: CRITICAL ALERT", alertContent);
+        }
 
+        let systemPrompt = "";
         if (lang === "rw") {
             if (serviceType === "analyze") {
-                systemPrompt = `Uri umuhanga akaba n'ubugenzuzi bwikora bwa AI kuri Nyamasheke Special Farming Crayfish Ltd mu Rwanda.
-                Tegeko: Subiza mu Kinyarwanda cyonyine cyiza kandi cyoroshye. Siba amagambo y'izindi ndimi.
-                1. **LIVE ALERT**: Niba Oxygen < 4.5 mg/L cyangwa pH < 6.0, tanga SMS y'Ibutsa ikaze.
-                2. **WATER HEALTH REPORT**: Sobanura uko Oxygen, pH, n'ubushyuhe bimeze kano kanya.
-                3. **FARMER RECOMMENDATION**: Inama 2 zifatika umworozi akora kano kanya mu rurimi rw'Ikinyarwanda gusa.`;
+                systemPrompt = `Uri umuhanga bwikora bwa AI kuri Nyamasheke Special Farming Crayfish Ltd. Subiza mu Kinyarwanda cyonyine. Tanga isesengura ry'ibipimo hanyuma utange inama 2 zifatika.`;
             } else {
-                systemPrompt = `Uri Umwarimu n'Umujyanama mu by'Ubworozi bw'Amafi mu Rwanda (Aquaculture Expert).
-                Tegeko: Tanga ISOMO RY'UBWOROZI BW'AMAFI mu Kinyarwanda cyonyine.
-                1. **UKO GUKORORA AMAFI BIKORWA**: Sobanura uburyo bwo koroza amafi neza n'uko bayagaburira.
-                2. **IKIBRAZO CY'IJORO NA OXYGEN**: Ihugure umworozi ku buryo 80% by'igihombo biba nijoro kubera oxygen igabanuka, n'uko yakoresha aerators.
-                3. **AMASHURI Y'IBIPIMO**: Amasomo ku bijyanye n'uburyo bwo kurinda pH n'ubushyuhe guhinduka.`;
+                systemPrompt = `Uri Umwarimu mu by'Ubworozi bw'Amafi mu Rwanda. Tanga isomo rya kinyamwufu ku mazi n'uburyo bwo kuyarinda guhinduka nijoro.`;
             }
         } else {
             if (serviceType === "analyze") {
-                systemPrompt = `You are an automated AI Aquaculture Expert at Nyamasheke Special Farming Crayfish Ltd in Rwanda.
-                Rule: Respond strictly in professional yet simple English. 
-                1. **LIVE ALERT**: If Oxygen < 4.5 mg/L or pH < 6.0, provide a critical urgent SMS alert format.
-                2. **WATER HEALTH REPORT**: Explain the current status of Oxygen, pH, and Temperature.
-                3. **FARMER RECOMMENDATION**: Provide 2 immediate actionable steps for the farmer.`;
+                systemPrompt = `You are an automated AI Aquaculture Expert. Respond strictly in simple English. Give water health report and 2 actionable steps.`;
             } else {
-                systemPrompt = `You are an Expert Fish Farming Lecturer and Advisor in Rwanda.
-                Rule: Provide a comprehensive FISH FARMING TRAINING LESSON strictly in English.
-                1. **FISH BREEDING & MANAGEMENT BASICS**: Explain best practices for breeding, feeding, and stock optimization.
-                2. **THE NIGHT-TIME OXYGEN CHALLENGE**: Educate the farmer on why 80% of fish losses happen at night due to dissolved oxygen drops, and how to use aerators.
-                3. **PARAMETER MAINTENANCE**: Lessons on keeping pH and temperature stable.`;
+                systemPrompt = `You are an Expert Fish Farming Lecturer. Provide training on maintaining water quality and managing night oxygen drop.`;
             }
         }
 
-        const userPrompt = `Parameters: Oxygen = ${oxygen} mg/L, pH = ${ph}, Temp = ${temp} °C. Language choice: ${lang}`;
+        const userPrompt = `Parameters: Oxygen = ${oxygen} mg/L, pH = ${ph}, Temp = ${temp} °C. Language: ${lang}`;
 
         const completion = await groq.chat.completions.create({
             messages: [
