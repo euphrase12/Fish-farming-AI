@@ -8,13 +8,23 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; }
         .container { max-width: 750px; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: 0 auto; }
         
-        /* Header Section ifite select y'ururimi */
         .header-section { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e0e0e0; padding-bottom: 15px; margin-bottom: 20px; }
         h1 { color: #0d47a1; margin: 0; font-size: 26px; font-weight: bold; }
         .subtitle { color: #555; margin-top: 5px; font-weight: 500; }
         select.lang-select { padding: 8px 12px; border-radius: 6px; border: 2px solid #0d47a1; font-weight: bold; background: white; color: #0d47a1; cursor: pointer; }
 
-        /* Miterere y'Ibyese (Cards) nk'uko biri kuri ifoto yawe */
+        /* Agace k'Umutekano n'Ubwishyu (Paywall Card) */
+        .auth-section { background: #fff3e0; border: 2px dashed #ff9800; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(230,81,0,0.05); }
+        .payment-info { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ffe0b2; margin-bottom: 15px; text-align: left; font-size: 15px; line-height: 1.5; color: #e65100; }
+        .auth-section input { padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid #ccc; width: 60%; max-width: 300px; text-align: center; font-weight: bold; }
+        .btn-auth { background: #e65100; color: white; border: none; padding: 12px 25px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-left: 10px; }
+        .btn-auth:hover { background: #b33f00; }
+
+        /* Blur Effect ikingira sensors niba umuntu atarishyura */
+        .protected-content { filter: blur(5px); pointer-events: none; opacity: 0.4; transition: all 0.5s ease; }
+        .unlocked { filter: none !important; pointer-events: auto !important; opacity: 1 !important; }
+
+        /* Miterere y'Ibyese (Cards) */
         .monitor-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
         .sensor-card { background: #eef2f7; padding: 25px 15px; border-radius: 12px; text-align: center; border: 1px solid #cfd8dc; }
         .sensor-card h3 { margin: 0 0 15px 0; color: #37474f; font-size: 16px; font-weight: 600; }
@@ -23,7 +33,6 @@
         
         .status-bar { text-align: center; font-weight: bold; color: #2e7d32; margin-bottom: 20px; background: #e8f5e9; padding: 12px; border-radius: 8px; border: 1px solid #c8e6c9; }
         
-        /* Buto z'Ibyizandikwa */
         .action-box { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
         .btn-action { color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: background 0.3s; text-align: center; }
         .btn-green { background-color: #2e7d32; }
@@ -31,8 +40,7 @@
         .btn-orange { background-color: #e65100; }
         .btn-orange:hover { background-color: #b33f00; }
         
-        .results-section { margin-top: 30px; padding: 20px; background: #fafafa; border-left: 6px solid #0d47a1; border-radius: 8px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
-        .results-section h3 { margin-top: 0; color: #37474f; }
+        .results-section { margin-top: 30px; padding: 20px; background: #fafafa; border-left: 6px solid #0d47a1; border-radius: 8px; }
         pre { white-space: pre-wrap; font-family: inherit; font-size: 15px; line-height: 1.6; color: #333; margin: 0; }
     </style>
 </head>
@@ -52,34 +60,50 @@
         </div>
     </div>
 
-    <div class="monitor-box">
-        <div class="sensor-card">
-            <h3 id="lbl-oxygen">DO (Oxygen)</h3>
-            <div id="live-oxygen" class="sensor-value">--</div>
-            <span class="sensor-unit">mg/L</span>
+    <div id="authBox" class="auth-section">
+        <h3 id="auth-title">🔐 Injiza Access Code wahawe na Patrick</h3>
+        
+        <div id="payment-guide" class="payment-info">
+            <strong>💳 Uburyo bwo Kwishura / Payment Guide:</strong><br>
+            • Kwishura ni Frw 5,000 ku kwezi. Yishyura ukoresheje MoMo Pay kuri Merchant Code: <strong>*182*8*1*XXXXXX#</strong>.<br>
+            • Nyuma yo kwishyura, ohereza ubutumwa kuri WhatsApp cyangwa SMS kuri <strong>+250 78X XXX XXX</strong> (Patrick) ngo uhite uhabwa Access Code yawe kano kanya.
         </div>
-        <div class="sensor-card">
-            <h3 id="lbl-ph">Water pH</h3>
-            <div id="live-ph" class="sensor-value">--</div>
-            <span class="sensor-unit">0 - 14 pH</span>
-        </div>
-        <div class="sensor-card">
-            <h3 id="lbl-temp">Temperature</h3>
-            <div id="live-temp" class="sensor-value">--</div>
-            <span class="sensor-unit">°C</span>
-        </div>
+
+        <input type="text" id="accessCodeInput" placeholder="Ugereranyo: PREMIUM_2026">
+        <button class="btn-auth" onclick="verifyAccessCode()">Fungura / Unlock</button>
+        <div id="authError" style="color: red; font-weight: bold; margin-top: 10px; display: none;">❌ Code ntabwo ari yo! Andikira Patrick akwemerere.</div>
     </div>
 
-    <div id="monitor-status" class="status-bar">🔄 Ibyuma biri mu mazi biri gupima...</div>
+    <div id="protectedContent" class="protected-content">
+        <div class="monitor-box">
+            <div class="sensor-card">
+                <h3 id="lbl-oxygen">DO (Oxygen)</h3>
+                <div id="live-oxygen" class="sensor-value">--</div>
+                <span class="sensor-unit">mg/L</span>
+            </div>
+            <div class="sensor-card">
+                <h3 id="lbl-ph">Water pH</h3>
+                <div id="live-ph" class="sensor-value">--</div>
+                <span class="sensor-unit">0 - 14 pH</span>
+            </div>
+            <div class="sensor-card">
+                <h3 id="lbl-temp">Temperature</h3>
+                <div id="live-temp" class="sensor-value">--</div>
+                <span class="sensor-unit">°C</span>
+            </div>
+        </div>
 
-    <div class="action-box">
-        <button id="btn-analyze" class="btn-action btn-green" onclick="triggerAI('analyze')">Baza AI Isesengure Amazi Ari mu Cyese Kano Kanya</button>
-        <button id="btn-lesson" class="btn-action btn-orange" onclick="triggerAI('lesson')">📚 Lifatire Isomo ry'Ubworozi (Training Lesson)</button>
-    </div>
+        <div id="monitor-status" class="status-bar">🔄 Ibyuma biri mu mazi...</div>
 
-    <div class="results-section">
-        <h3 id="lbl-results">✨ Umusaruro n'Ibutsa bya AI (Real-Time Analysis):</h3>
-        <div id="displayResults">...</div>
+        <div class="action-box">
+            <button id="btn-analyze" class="btn-action btn-green" onclick="triggerAI('analyze')">Baza AI Isesengure Amazi Ari mu Cyese</button>
+            <button id="btn-lesson" class="btn-action btn-orange" onclick="triggerAI('lesson')">📚 Lifatire Isomo ry'Ubworozi (Training Lesson)</button>
+        </div>
+
+        <div class="results-section">
+            <h3 id="lbl-results">✨ Umusaruro n'Ibutsa bya AI:</h3>
+            <div id="displayResults">...</div>
+        </div>
     </div>
 </div>
 
@@ -88,6 +112,7 @@ let currentOxygen = 5.3;
 let currentPh = 7.4;
 let currentTemp = 26.5;
 let currentLang = 'rw';
+let isUnlocked = false;
 
 const translations = {
     rw: {
@@ -101,7 +126,10 @@ const translations = {
         btnAnalyze: "Baza AI Isesengure Amazi Ari mu Cyese Kano Kanya",
         btnLesson: "📚 Lifatire Isomo ry'Ubworozi (Training Lesson)",
         lblResults: "✨ Umusaruro n'Ibutsa bya AI (Real-Time Analysis):",
-        aiThinking: "⏳ Llama 3.3 AI iri gusesengura amakuru mu Kinyarwanda..."
+        aiThinking: "⏳ Llama 3.3 AI iri gusesengura amakuru mu Kinyarwanda...",
+        authTitle: "🔐 Injiza Access Code wahawe na Patrick",
+        authWrong: "❌ Code ntabwo ari yo! Andikira Patrick akwemerere.",
+        payGuide: "<strong>💳 Uburyo bwo Kwishura:</strong><br>• Kwishura ni Frw 5,000 ku kwezi. Yishyura ukoresheje MoMo Pay kuri Merchant Code: <strong>*182*8*1*XXXXXX#</strong>.<br>• Nyuma yo kwishyura, ohereza ubutumwa kuri WhatsApp cyangwa SMS kuri <strong>+250 78X XXX XXX</strong> (Patrick) ngo uhite uhabwa Access Code yawe kano kanya."
     },
     en: {
         title: "Nyamasheke Smart Monitor AI 🐟",
@@ -114,7 +142,10 @@ const translations = {
         btnAnalyze: "Ask AI to Analyze Current Pond Water",
         btnLesson: "📚 Take Fish Farming Training Lesson",
         lblResults: "✨ AI Insights & Training Results (Real-Time Analysis):",
-        aiThinking: "⏳ Llama 3.3 AI is analyzing data in English..."
+        aiThinking: "⏳ Llama 3.3 AI is analyzing data in English...",
+        authTitle: "🔐 Enter Access Code provided by Patrick",
+        authWrong: "❌ Invalid Code! Please contact Patrick for subscription permission.",
+        payGuide: "<strong>💳 Payment Guide:</strong><br>• Subscription cost is Frw 5,000 per month. Pay via MoMo Pay Merchant Code: <strong>*182*8*1*XXXXXX#</strong>.<br>• After payment, send confirmation via WhatsApp or SMS to <strong>+250 78X XXX XXX</strong> (Patrick) to receive your access code immediately."
     }
 };
 
@@ -130,11 +161,42 @@ function changeLanguage() {
     document.getElementById('btn-analyze').innerText = t.btnAnalyze;
     document.getElementById('btn-lesson').innerText = t.btnLesson;
     document.getElementById('lbl-results').innerText = t.lblResults;
+    document.getElementById('auth-title').innerText = t.authTitle;
+    document.getElementById('payment-guide').innerHTML = t.payGuide;
     updateLiveSensors();
 }
 
+async function verifyAccessCode() {
+    const code = document.getElementById('accessCodeInput').value;
+    const errorDiv = document.getElementById('authError');
+    
+    try {
+        const response = await fetch('/api/verify-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            isUnlocked = true;
+            errorDiv.style.display = 'none';
+            document.getElementById('authBox').style.display = 'none';
+            document.getElementById('protectedContent').classList.add('unlocked');
+            updateLiveSensors();
+        } else {
+            errorDiv.innerText = translations[currentLang].authWrong;
+            errorDiv.style.display = 'block';
+        }
+    } catch (e) {
+        errorDiv.innerText = "Error communicating with server.";
+        errorDiv.style.display = 'block';
+    }
+}
+
 function updateLiveSensors() {
-    // Ibyuma bipima umunota ku wundi byikora
+    if (!isUnlocked) return;
+
     currentOxygen = (Math.random() * (6.5 - 3.8) + 3.8).toFixed(1);
     currentPh = (Math.random() * (8.2 - 5.8) + 5.8).toFixed(1);
     currentTemp = (Math.random() * (28.0 - 23.0) + 23.0).toFixed(1);
@@ -150,20 +212,17 @@ function updateLiveSensors() {
         statusBar.innerHTML = t.statusBad;
         statusBar.style.background = "#ffebee";
         statusBar.style.color = "#c62828";
-        statusBar.style.border = "1px solid #ffcdd2";
     } else {
         statusBar.innerHTML = t.statusGood;
         statusBar.style.background = "#e8f5e9";
         statusBar.style.color = "#2e7d32";
-        statusBar.style.border = "1px solid #c8e6c9";
     }
 }
 
-// Buri masegonda 4, sensors zizunguruka zenyine umunota ku wundi
 setInterval(updateLiveSensors, 4000);
-updateLiveSensors(); 
 
 async function triggerAI(type) {
+    if (!isUnlocked) return;
     const displayResults = document.getElementById('displayResults');
     displayResults.innerHTML = translations[currentLang].aiThinking;
 
@@ -179,9 +238,7 @@ async function triggerAI(type) {
                 lang: currentLang
             })
         });
-
         const data = await response.json();
-        
         if (data.error) {
             displayResults.innerHTML = `🚨 Error: ${data.error}`;
         } else {
