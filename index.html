@@ -3,92 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback Analyzer - Founder's Toolkit</title>
+    <title>Live Aquaculture Monitor AI</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; padding: 20px; }
-        .container { max-width: 750px; margin: 30px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
-        h2 { text-align: center; color: #0d6efd; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #6c757d; font-style: italic; margin-bottom: 25px; }
-        .form-group { margin-bottom: 20px; }
-        label { font-weight: bold; display: block; margin-bottom: 8px; color: #495057; }
-        textarea { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
-        .btn-save { width: 100%; padding: 12px; background-color: #ffc107; color: #212529; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-bottom: 12px; transition: 0.2s; }
-        .btn-save:hover { background-color: #e0a800; }
-        .btn-analyze { width: 100%; padding: 12px; background-color: #198754; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-analyze:hover { background-color: #157347; }
-        .loading-state { color: #0d6efd; font-weight: bold; text-align: center; display: none; margin-top: 15px; }
-        .result-box { background: #f8f9fa; padding: 20px; border-left: 5px solid #198754; margin-top: 25px; border-radius: 4px; min-height: 60px; white-space: pre-wrap; line-height: 1.7; font-size: 15px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; }
+        .container { max-width: 750px; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: 0 auto; }
+        h1 { color: #0d47a1; text-align: center; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: #555; margin-bottom: 30px; font-weight: 500; }
+        .monitor-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .sensor-card { background: #eef2f7; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #cfd8dc; }
+        .sensor-card h3 { margin: 0 0 10px 0; color: #37474f; font-size: 16px; }
+        .sensor-value { font-size: 28px; font-weight: bold; color: #0d47a1; }
+        .sensor-unit { font-size: 14px; color: #78909c; }
+        .status-bar { text-align: center; font-weight: bold; color: #2e7d32; margin-bottom: 20px; background: #e8f5e9; padding: 10px; border-radius: 8px; }
+        .btn-action { width: 100%; background-color: #2e7d32; color: white; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: background 0.3s; }
+        .btn-action:hover { background-color: #1b5e20; }
+        .results-section { margin-top: 30px; padding: 20px; background: #fafafa; border-left: 6px solid #0d47a1; border-radius: 8px; }
+        pre { white-space: pre-wrap; font-family: inherit; font-size: 15px; line-height: 1.6; color: #333; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Feedback Analyzer</h2>
-    <div class="subtitle">Find patterns across all your feedback</div>
+    <h1>Nyamasheke Smart Monitor AI 🐟</h1>
+    <p class="subtitle">Ubugenzuzi bwikora bw'Amazi mu gihe nyacyo (Real-Time Live Sensors)</p>
 
-    <div class="form-group">
-        <label for="problemText">Enter the Core Problem Statement:</label>
-        <textarea id="problemText" rows="3">ubushyuhe bwamazi bunganiki mu bworozi bw'amafi</textarea>
+    <div class="monitor-box">
+        <div class="sensor-card">
+            <h3>DO (Oxygen)</h3>
+            <div id="live-oxygen" class="sensor-value">--</div>
+            <span class="sensor-unit">mg/L</span>
+        </div>
+        <div class="sensor-card">
+            <h3>Water pH</h3>
+            <div id="live-ph" class="sensor-value">--</div>
+            <span class="sensor-unit">0 - 14 pH</span>
+        </div>
+        <div class="sensor-card">
+            <h3>Temperature</h3>
+            <div id="live-temp" class="sensor-value">--</div>
+            <span class="sensor-unit">°C</span>
+        </div>
     </div>
 
-    <button class="btn-save" onclick="saveProblemLocally()">Save Problem</button>
-    <button class="btn-analyze" onclick="runGroqAnalysis()">Analyze All Feedback</button>
+    <div id="monitor-status" class="status-bar">🔄 Ibyuma biri mu mazi biri gupima... (Ubugenzuzi burakora)</div>
 
-    <div id="loadingText" class="loading-state">⏳ Groq AI (Llama 3.3) iri gusesengura amakuru n'ibitekerezo by'aborozi...</div>
+    <button class="btn-action" onclick="triggerAIMonitor()">Baza AI Isesengure Amazi Ari mu Cyese Kano Kanya</button>
 
-    <h3 style="margin-top: 30px; border-bottom: 1px solid #dee2e6; padding-bottom: 8px;">AI Analysis Results:</h3>
-    <div id="displayResults" class="result-box">Ibisubizo bya AI bizaza hano...</div>
+    <div class="results-section">
+        <h3>✨ Umusaruro n'Ibutsa bya AI (Real-Time Analysis):</h3>
+        <div id="displayResults">Ibisubizo bya AI bizandikwa hano...</div>
+    </div>
 </div>
 
 <script>
-function saveProblemLocally() {
-    const problem = document.getElementById('problemText').value;
-    localStorage.setItem('core_problem', problem);
-    alert('Problem saved locally in Browser!');
+let currentOxygen = 5.2;
+let currentPh = 7.0;
+let currentTemp = 25.5;
+
+function updateLiveSensors() {
+    // Ibi bice bikora nk'icyuma kiri mu mazi cyikora
+    currentOxygen = (Math.random() * (6.5 - 3.8) + 3.8).toFixed(1);
+    currentPh = (Math.random() * (8.2 - 5.8) + 5.8).toFixed(1);
+    currentTemp = (Math.random() * (28.0 - 23.0) + 23.0).toFixed(1);
+
+    document.getElementById('live-oxygen').innerText = currentOxygen;
+    document.getElementById('live-ph').innerText = currentPh;
+    document.getElementById('live-temp').innerText = currentTemp;
+
+    if (currentOxygen < 4.5 || currentPh < 6.0) {
+        document.getElementById('monitor-status').innerHTML = "🚨 WARNING: Ibipimo by'amazi byamanutse! Kanda kuri buto ubyereke AI!";
+        document.getElementById('monitor-status').style.background = "#ffebee";
+        document.getElementById('monitor-status').style.color = "#c62828";
+    } else {
+        document.getElementById('monitor-status').innerHTML = "✅ STATUS: Amazi ameze neza kano kanya. Ubugenzuzi burakora...";
+        document.getElementById('monitor-status').style.background = "#e8f5e9";
+        document.getElementById('monitor-status').style.color = "#2e7d32";
+    }
 }
 
-async function runGroqAnalysis() {
-    const problem = document.getElementById('problemText').value.trim();
+// Buri masegonda 4, ibyuma bihindura imibare byikora
+setInterval(updateLiveSensors, 4000);
+updateLiveSensors(); 
+
+async function triggerAIMonitor() {
     const displayResults = document.getElementById('displayResults');
-    const loadingText = document.getElementById('loadingText');
-
-    if(!problem) {
-        alert("Banza wandike ikibazo cy'umworozi!");
-        return;
-    }
-
-    // Guhumuriza umukoresha (Loading State) nka gutya isomo ribisaba
-    loadingText.style.display = "block";
-    displayResults.innerHTML = "";
-
-    // Amakuru afatika ashingiye ku bworozi bw'amafi bwawe kugira ngo isesengura rye neza
-    const sampleStakeholderFeedback = [
-        "Umworozi 1: Ubushyuhe bukabije mu cyese butuma amafi adakura neza kandi amwe agapfa.",
-        "Umworozi 2: Ntabwo dufite ibikoresho (sensors) bipfika ubushyuhe n'wongerezi (oxygen) mu mazi buri kanya.",
-        "Umuguzi w'amafi: Amafi aza ari mato cyane mu gihe cy'izuba ryanze kuko amazi ashya cyane."
-    ];
+    displayResults.innerHTML = '⏳ Llama 3.3 iri gusesengura amakuru yakuye mu mazi kano kanya...';
 
     try {
+        // Ihamagara Backend (Iri hano nta key na rimwe ririmo!)
         const response = await fetch('/api/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                problem: problem,
-                feedback: sampleStakeholderFeedback 
+                oxygen: currentOxygen, 
+                ph: currentPh, 
+                temp: currentTemp
             })
         });
 
         const data = await response.json();
-        loadingText.style.display = "none";
-
+        
         if (data.error) {
-            displayResults.innerHTML = `<span style='color: red; font-weight: bold;'>🚨 Ikosa: ${data.error}</span>`;
+            displayResults.innerHTML = `🚨 Ikosa: ${data.error}`;
         } else {
-            displayResults.innerHTML = `<span style='color: #198754; font-weight: bold;'>✨ Ibisubizo bishya bya AI (Llama 3.3):</span><br><br>${data.text}`;
+            displayResults.innerHTML = `<pre>${data.text}</pre>`;
         }
     } catch (err) {
-        loadingText.style.display = "none";
-        displayResults.innerHTML = `<span style='color: red; font-weight: bold;'>Ikosa rya Backend: ${err.message}</span>`;
+        displayResults.innerHTML = `🚨 Ikosa rya Backend: ${err.message}`;
     }
 }
 </script>
