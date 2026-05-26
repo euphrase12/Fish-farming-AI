@@ -31,8 +31,8 @@
     </header>
 
     <nav class="bg-slate-900 rounded-xl p-2 border border-slate-800 flex justify-around mb-6 text-xs md:text-sm font-mono">
-        <button id="tabLessons" onclick="changeTab('lessons')" class="py-2 px-3 active-tab cursor-pointer">📚 <span id="navTab1">Amasomo</span></button>
-        <button id="tabMonitor" onclick="changeTab('monitor')" class="py-2 px-3 text-slate-400 cursor-pointer">📡 <span id="navTab2">Gupima Ibidaka</span></button>
+        <button id="tabLessons" onclick="changeTab('lessons')" class="py-2 px-3 active-tab cursor-pointer">📚 <span id="navTab1">Amasomo & Amavidiyo</span></button>
+        <button id="tabMonitor" onclick="changeTab('monitor')" class="py-2 px-3 text-slate-400 cursor-pointer">📡 <span id="navTab2">Gupima Ibidaka (Sensors)</span></button>
         <button id="tabLanding" onclick="changeTab('landing')" class="py-2 px-3 text-slate-400 cursor-pointer">🚀 <span id="navTab3">Landing Page & A/B</span></button>
         <button id="tabDebug" onclick="changeTab('debug')" class="py-2 px-3 text-slate-400 cursor-pointer">🔬 <span id="navTab4">DevTools Lab</span></button>
     </nav>
@@ -41,6 +41,29 @@
         
         <section id="viewLessons" class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
             <h3 id="lessonsHeading" class="text-lg font-bold text-slate-200 mb-4 font-mono">// Isanduku y'Amasomo y'Ubworozi bwa Kijyambere</h3>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="lg:col-span-2 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                    <h4 id="lblVideoTitle" class="text-xs uppercase font-mono text-emerald-400 mb-2">📹 Isomo rya Video: Uburyo bwo Korora Crayfish</h4>
+                    <div class="aspect-video bg-slate-900 rounded-lg flex items-center justify-center border border-slate-800 overflow-hidden relative">
+                        <iframe class="w-full h-full" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Aquaculture Video Lesson" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                </div>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col justify-between">
+                    <div>
+                        <h4 id="lblSlidesTitle" class="text-xs uppercase font-mono text-amber-400 mb-3">📊 Umubumbe w'Amafoto (Presentation Slides)</h4>
+                        <div class="bg-slate-900 p-6 rounded-lg text-center border border-slate-800 min-h-[140px] flex flex-col justify-center">
+                            <span id="slideNumber" class="text-[10px] text-emerald-500 font-mono block mb-1">SLIDE 1 / 3</span>
+                            <p id="slideContent" class="text-xs text-slate-200 font-semibold">Gutegura ikidaka: Si ngombwa amazi menshi cyane, icyo bakeneye ni umwuka (Oxygen) n'ubwihisho.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-4">
+                        <button onclick="prevSlide()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-xs py-1.5 rounded font-mono cursor-pointer">← Back</button>
+                        <button onclick="nextSlide()" class="w-1/2 bg-emerald-600 hover:bg-emerald-500 text-xs py-1.5 rounded font-mono text-white font-bold cursor-pointer">Next →</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
                     <h4 id="lesson1Title" class="font-bold text-emerald-400 text-sm">Isomo rya 1: Gucunga amazi ya Crayfish</h4>
@@ -54,23 +77,28 @@
         </section>
 
         <section id="viewMonitor" class="bg-slate-900 rounded-2xl p-6 border border-slate-800 hidden">
-            <h3 id="monitorHeading" class="text-lg font-bold text-slate-200 mb-4 font-mono">// Gupima Ibyangombwa by'Amazi & Amajwi y'Intabaza</h3>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+                <h3 id="monitorHeading" class="text-lg font-bold text-slate-200 font-mono">// Gupima Ibyangombwa by'Amazi & Amajwi y'Intabaza</h3>
+                <button onclick="connectSensors()" id="btnConnectSensor" class="bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-xs px-3 py-1.5 rounded-lg font-bold cursor-pointer transition-all">
+                    🔗 KONEGITA SENSOR (Connect Live Data)
+                </button>
+            </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
                 <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
                     <span id="lblOxygen" class="text-xs text-slate-400 uppercase font-mono">Umwuka (Oxygen - pO2)</span>
-                    <strong class="text-2xl block text-red-400 mt-1 pulse-alert">3.2 mg/L</strong>
-                    <span id="alertOxygen" class="text-[10px] text-red-500 font-mono">🚨 Iri hasi cyane!</span>
+                    <strong id="valOxygen" class="text-2xl block text-slate-400 mt-1">-- mg/L</strong>
+                    <span id="alertOxygen" class="text-[10px] text-slate-500 font-mono">⚪ Sensor disconnected</span>
                 </div>
                 <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
                     <span id="lblPh" class="text-xs text-slate-400 uppercase font-mono">Igipimo cya pH</span>
-                    <strong class="text-2xl block text-emerald-400 mt-1">7.4</strong>
-                    <span id="alertPh" class="text-[10px] text-emerald-500 font-mono">🟢 Iri mu murongo</span>
+                    <strong id="valPh" class="text-2xl block text-slate-400 mt-1">--</strong>
+                    <span id="alertPh" class="text-[10px] text-slate-500 font-mono">⚪ Sensor disconnected</span>
                 </div>
                 <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
                     <span id="lblTemp" class="text-xs text-slate-400 uppercase font-mono">Ubushyuhe (Temp)</span>
-                    <strong class="text-2xl block text-amber-400 mt-1">22.5°C</strong>
-                    <span id="alertTemp" class="text-[10px] text-amber-500 font-mono">🟢 Harashyushye neza</span>
+                    <strong id="valTemp" class="text-2xl block text-slate-400 mt-1">-- °C</strong>
+                    <span id="alertTemp" class="text-[10px] text-slate-500 font-mono">⚪ Sensor disconnected</span>
                 </div>
             </div>
 
@@ -118,20 +146,24 @@
 </div>
 
 <script>
+// CENTRAL TRILINGUAL DICTIONARY
 const translations = {
     rw: {
         appTitle: "🌊 Fish-farming-AI",
         appSubtitle: "Nyamasheke Special Farming Crayfish Ltd • Urwubako rw'Umusaruro",
-        navTab1: "Amasomo", navTab2: "Gupima Ibidaka", navTab3: "Landing Page & A/B", navTab4: "DevTools Lab",
+        navTab1: "Amasomo & Amavidiyo", navTab2: "Gupima Ibidaka (Sensors)", navTab3: "Landing Page & A/B", navTab4: "DevTools Lab",
         lessonsHeading: "// Isanduku y'Amasomo y'Ubworozi bwa Kijyambere",
+        lblVideoTitle: "📹 Isomo rya Video: Uburyo bwo Korora Crayfish",
+        lblSlidesTitle: "📊 Umubumbe w'Amafoto (Presentation Slides)",
         lesson1Title: "Isomo rya 1: Gucunga amazi ya Crayfish",
         lesson1Body: "Crayfish zikenera amazi afite isuku n'umwuka uhagije (Oxygen). Ubushyuhe bwiza buri hagati ya 20°C kugeza kuri 25°C.",
         lesson2Title: "Isomo rya 2: Kugaburira no Kuryoshya umusaruro",
         lesson2Body: "Ibura ry'ibiryo bituma amakamba aryana (Cannibalism). Gaburira kabiri ku munsi, cyane cyane nimugoroba.",
         monitorHeading: "// Gupima Ibyangombwa by'Amazi & Amajwi y'Intabaza",
-        lblOxygen: "Umwuka (Oxygen - pO2)", alertOxygen: "🚨 Iri hasi cyane!",
-        lblPh: "Igipimo cya pH", alertPh: "🟢 Iri mu murongo",
-        lblTemp: "Ubushyuhe (Temp)", alertTemp: "🟢 Harashyushye neza",
+        btnConnectSensor: "🔗 KONEGITA SENSOR (Connect Live Data)",
+        lblOxygen: "Umwuka (Oxygen - pO2)",
+        lblPh: "Igipimo cya pH",
+        lblTemp: "Ubushyuhe (Temp)",
         btnVoiceTest: "🔊 Umva IJWI RY'INTABAZA (Voice Alert Test)",
         voiceScript: "Ikitonderwa cyihutirwa! Umwuka wa oxygen mu kidaka waguye munsi ya gatatu n'ibice bibiri. Nyamuneka fimbura imashini izana umwuka!",
         voiceLang: "sw",
@@ -145,21 +177,31 @@ const translations = {
         btnTriggerCrash: "💥 Trigger API Crash Error",
         btnRunTeachMe: "🔮 Run \"Teach Me\" Explanation",
         lblConsoleTitle: "Simulated DevTools Console:",
-        lblTeachMeTitle: "AI Teach-Me Breakdown Output:"
+        lblTeachMeTitle: "AI Teach-Me Breakdown Output:",
+        slides: [
+            "Gutegura ikidaka: Si ngombwa amazi menshi cyane, icyo bakeneye ni umwuka (Oxygen) n'ubwihisho.",
+            "Ibiryo bya Crayfish: Zirya ibiryo birimo poroteyine (Protein) nyinshi ngo amakamba akure neza.",
+            "Umutekano: Kurikirana igipimo cya pH n'ubushyuhe buri munsi ukoresheje sensor za AI Ventures."
+        ],
+        sensorConnected: "🔌 ZAKONEGITSE!", sensorDisconnected: "⚪ Sensor disconnected",
+        alertOxygenLow: "🚨 Iri hasi cyane!", alertNormal: "🟢 Iri mu murongo", alertTempNormal: "🟢 Harashyushye neza"
     },
     en: {
         appTitle: "🌊 Fish-farming-AI",
-        appSubtitle: "Nyamasheke Special Farming Crayfish Ltd • Production Hub Dashboard",
-        navTab1: "Syllabus Modules", navTab2: "Pond Telemetry", navTab3: "Landing Page & A/B", navTab4: "DevTools Engine",
+        appSubtitle: "Nyamasheke Special Farming Crayfish Ltd • Production Dashboard",
+        navTab1: "Syllabus & Media", navTab2: "Pond Sensors (Live)", navTab3: "Landing Page & A/B", navTab4: "DevTools Engine",
         lessonsHeading: "// Professional Aquaculture Syllabus Vault",
+        lblVideoTitle: "📹 Video Lesson: Crayfish Farming Masterclass",
+        lblSlidesTitle: "📊 Educational Interactive Slides",
         lesson1Title: "Lesson 1: Crayfish Water Quality Metrics",
         lesson1Body: "Crayfish demand clean water and optimal dissolved oxygen (pO2). Ideal survival temperatures range precisely between 20°C and 25°C.",
         lesson2Title: "Lesson 2: Feeding Regimes & Yield Retention",
         lesson2Body: "Feed starvation directly induces extreme cannibalism among crustacea. Feed twice daily, primarily during peak nocturnal cycles.",
         monitorHeading: "// Automated Realtime Water Telemetry & Voice Alarms",
-        lblOxygen: "Dissolved Oxygen (pO2)", alertOxygen: "🚨 Critical Hypoxia Event!",
-        lblPh: "Biochemical pH Status", alertPh: "🟢 Target Range Stable",
-        lblTemp: "Water Temperature", alertTemp: "🟢 Thermal State Optimal",
+        btnConnectSensor: "🔗 CONNECT LIVE SENSORS",
+        lblOxygen: "Dissolved Oxygen (pO2)",
+        lblPh: "Biochemical pH Status",
+        lblTemp: "Water Temperature",
         btnVoiceTest: "🔊 Test Emergency Audio Alert Broadcast",
         voiceScript: "Critical emergency warning! Dissolved oxygen in pond has dropped below 3.2 milligrams per liter. Activate mechanical aeration immediately.",
         voiceLang: "en",
@@ -173,21 +215,31 @@ const translations = {
         btnTriggerCrash: "💥 Inject Backend Server Exceptions",
         btnRunTeachMe: "🔮 Trigger AI 'Teach Me' Analysis Blueprint",
         lblConsoleTitle: "Simulated DevTools Console Stack:",
-        lblTeachMeTitle: "AI Teach-Me Architectural Evaluation Report:"
+        lblTeachMeTitle: "AI Teach-Me Architectural Evaluation Report:",
+        slides: [
+            "Pond Setup: Crayfish need hiding spots and high oxygen levels more than deep water channels.",
+            "Nutritional Intake: High-protein organic feed prevents starvation and yield loss.",
+            "Telemetry Watch: Check your pH levels and temperature streams daily using automated sensors."
+        ],
+        sensorConnected: "🔌 CONNECTED LIVE", sensorDisconnected: "⚪ Sensor disconnected",
+        alertOxygenLow: "🚨 Critical Hypoxia Event!", alertNormal: "🟢 Target Range Stable", alertTempNormal: "🟢 Thermal State Optimal"
     },
     fr: {
         appTitle: "🌊 Fish-farming-AI",
         appSubtitle: "Nyamasheke Special Farming Crayfish Ltd • Tableau de Bord",
-        navTab1: "Syllabus d'Élevage", navTab2: "Télémétrie des Étangs", navTab3: "Page d'Atterrissage", navTab4: "Moteur DevTools",
+        navTab1: "Syllabus & Médias", navTab2: "Capteurs d'Étangs (Direct)", navTab3: "Page d'Atterrissage", navTab4: "Moteur DevTools",
         lessonsHeading: "// Modules de Formation Aquacole de Haute Qualité",
+        lblVideoTitle: "📹 Leçon Vidéo: Aquaculture Spécifique d'Écrevisses",
+        lblSlidesTitle: "📊 Diapositive Éducative Interactive",
         lesson1Title: "Leçon 1: Gestion des Paramètres Hydrauliques",
         lesson1Body: "Les écrevisses nécessitent une eau pure et une saturation élevée en oxygène (pO2). La température idéale oscille entre 20°C et 25°C.",
         lesson2Title: "Leçon 2: Protocoles Nutritionnels et Rendement",
         lesson2Body: "Le manque de nourriture provoque un cannibalisme sévère chez les crustacés. Distribuez les rations deux fois par jour, surtout le soir.",
         monitorHeading: "// Surveillance Hydrologique Directe et Alertes Vocales",
-        lblOxygen: "Oxygène Dissous (pO2)", alertOxygen: "🚨 Ptoblème d'Hypoxie Détectée!",
-        lblPh: "Potentiel Hydrogène (pH)", alertPh: "🟢 Zone Stable Normale",
-        lblTemp: "Température Thermique", alertTemp: "🟢 Niveau Thermique Conforme",
+        btnConnectSensor: "🔗 CONNECTER LES CAPTEURS DIRECTS",
+        lblOxygen: "Oxygène Dissous (pO2)",
+        lblPh: "Potentiel Hydrogène (pH)",
+        lblTemp: "Température Thermique",
         btnVoiceTest: "🔊 Activer l'Alerte Vocale d'Urgence",
         voiceScript: "Alerte de sécurité critique! Le niveau d'oxygène dissous est tombé en dessous de 3.2 milligrammes par litre. Veuillez activer les aérateurs.",
         voiceLang: "fr",
@@ -201,12 +253,20 @@ const translations = {
         btnTriggerCrash: "💥 Déclencher une Erreur d'API Serveur",
         btnRunTeachMe: "🔮 Enregistrer l'Analyse Spécifique 'Teach Me'",
         lblConsoleTitle: "Sortie de la Console DevTools Simulée:",
-        lblTeachMeTitle: "Rapport d'Analyse d'Ingénierie de l'IA 'Teach Me':"
+        lblTeachMeTitle: "Rapport d'Analyse d'Ingénierie de l'IA 'Teach Me':",
+        slides: [
+            "Configuration: Les écrevisses ont besoin de cachettes et d'oxygène, pas de canaux profonds.",
+            "Nutrition: Des aliments riches en protéines organiques préviennent le cannibalisme.",
+            "Surveillance: Vérifiez quotidiennement les flux de pH et de température via des capteurs automatisés."
+        ],
+        sensorConnected: "🔌 CAPTEURS ACTIFS", sensorDisconnected: "⚪ Capteur déconnecté",
+        alertOxygenLow: "🚨 Hypoxie Critique Détectée!", alertNormal: "🟢 Zone Stable Normale", alertTempNormal: "🟢 Niveau Thermique Conforme"
     }
 };
 
 let currentLang = 'rw';
 let currentError = "";
+let currentSlideIndex = 0;
 
 function setLanguage(lang) {
     currentLang = lang;
@@ -227,17 +287,17 @@ function setLanguage(lang) {
     document.getElementById('navTab3').innerText = data.navTab3;
     document.getElementById('navTab4').innerText = data.navTab4;
     document.getElementById('lessonsHeading').innerText = data.lessonsHeading;
+    document.getElementById('lblVideoTitle').innerText = data.lblVideoTitle;
+    document.getElementById('lblSlidesTitle').innerText = data.lblSlidesTitle;
     document.getElementById('lesson1Title').innerText = data.lesson1Title;
     document.getElementById('lesson1Body').innerText = data.lesson1Body;
     document.getElementById('lesson2Title').innerText = data.lesson2Title;
     document.getElementById('lesson2Body').innerText = data.lesson2Body;
     document.getElementById('monitorHeading').innerText = data.monitorHeading;
+    document.getElementById('btnConnectSensor').innerText = data.btnConnectSensor;
     document.getElementById('lblOxygen').innerText = data.lblOxygen;
-    document.getElementById('alertOxygen').innerText = data.alertOxygen;
     document.getElementById('lblPh').innerText = data.lblPh;
-    document.getElementById('alertPh').innerText = data.alertPh;
     document.getElementById('lblTemp').innerText = data.lblTemp;
-    document.getElementById('alertTemp').innerText = data.alertTemp;
     document.getElementById('btnVoiceTest').innerText = data.btnVoiceTest;
     document.getElementById('landingHeading').innerText = data.landingHeading;
     document.getElementById('lpHeadline').innerText = data.lpHeadline;
@@ -249,6 +309,63 @@ function setLanguage(lang) {
     document.getElementById('btnRunTeachMe').innerText = data.btnRunTeachMe;
     document.getElementById('lblConsoleTitle').innerText = data.lblConsoleTitle;
     document.getElementById('lblTeachMeTitle').innerText = data.lblTeachMeTitle;
+    
+    updateSlideDisplay();
+}
+
+// INTERACTIVE SLIDES MODULE CONTROLLER
+function updateSlideDisplay() {
+    const data = translations[currentLang];
+    document.getElementById('slideNumber').innerText = `SLIDE ${currentSlideIndex + 1} / 3`;
+    document.getElementById('slideContent').innerText = data.slides[currentSlideIndex];
+}
+
+function nextSlide() {
+    currentSlideIndex = (currentSlideIndex + 1) % 3;
+    updateSlideDisplay();
+}
+
+function prevSlide() {
+    currentSlideIndex = (currentSlideIndex - 1 + 3) % 3;
+    updateSlideDisplay();
+}
+
+// LIVE SENSOR CONNECTION CONTROLLER (Pulls real data via Backend Express Server)
+async function connectSensors() {
+    const btn = document.getElementById('btnConnectSensor');
+    btn.innerText = currentLang === 'rw' ? "⏳ Iri gukonetinga..." : "⏳ Synchronizing stream...";
+    
+    try {
+        const response = await fetch('http://localhost:5000/api/pond-status');
+        if(!response.ok) throw new Error("Connection anomaly");
+        
+        const data = await response.json();
+        const config = translations[currentLang];
+
+        // Hydrate Telemetry Values from Endpoint Stream
+        document.getElementById('valOxygen').innerText = `${data.oxygen} mg/L`;
+        document.getElementById('valOxygen').className = "text-2xl block text-red-400 mt-1 pulse-alert";
+        document.getElementById('alertOxygen').innerText = config.alertOxygenLow;
+        document.getElementById('alertOxygen').className = "text-[10px] text-red-500 font-mono";
+
+        document.getElementById('valPh').innerText = data.ph;
+        document.getElementById('valPh').className = "text-2xl block text-emerald-400 mt-1";
+        document.getElementById('alertPh').innerText = config.alertNormal;
+        document.getElementById('alertPh').className = "text-[10px] text-emerald-500 font-mono";
+
+        document.getElementById('valTemp').innerText = `${data.temperature} °C`;
+        document.getElementById('valTemp').className = "text-2xl block text-amber-400 mt-1";
+        document.getElementById('alertTemp').innerText = config.alertTempNormal;
+        document.getElementById('alertTemp').className = "text-[10px] text-amber-500 font-mono";
+
+        btn.innerText = config.sensorConnected;
+        btn.className = "bg-slate-800 text-emerald-400 border border-emerald-500 font-mono text-xs px-3 py-1.5 rounded-lg font-bold cursor-not-allowed";
+        btn.disabled = true;
+
+    } catch (e) {
+        alert(currentLang === 'rw' ? "❌ Ntibashije gufungura sensor! Banze utangize 'node server.js' mbanza!" : "❌ Connection failed. Run 'node server.js' first.");
+        btn.innerText = translations[currentLang].btnConnectSensor;
+    }
 }
 
 function changeTab(tabId) {
