@@ -292,13 +292,15 @@ function changeLanguage() {
     }
 }
 
+// 🔐 IKOSORWA RYA BUTO: Hano niho habaga akajagari gatuma idakora
 function handleRegister() {
-    const name = document.getElementById('regName').value;
-    if (!name) { 
+    const nameInput = document.getElementById('regName');
+    if (!nameInput || !nameInput.value.trim()) { 
         alert(currentLang==='rw'?"Andika izina ryawe rwose!":currentLang==='en'?"Please enter your name!":"Veuillez entrer votre nom!"); 
         return; 
     }
-    changeLanguage();
+    
+    changeLanguage(); // Kuvugurura indimi zose
     document.getElementById('step-register').classList.add('hidden');
     document.getElementById('step-choice').classList.remove('hidden');
 }
@@ -349,14 +351,13 @@ function resetWaterUI() {
     changeLanguage();
 }
 
-// 🌐 SEARCHING YA MASEGONDA 4 NYAKURI HAMWE N'ICYEMEZO
 async function connectSensors() {
     const btn = document.getElementById('btn-connect');
     const status = document.getElementById('sensor-status-bar');
     const d = dictionary[currentLang];
     
     btn.disabled = true;
-    btn.style.background = "#e65100"; // Orange ririndisha
+    btn.style.background = "#e65100"; 
     
     btn.innerText = d.statusConnecting;
     status.innerText = d.statusConnecting;
@@ -369,7 +370,6 @@ async function connectSensors() {
             const response = await fetch('/api/live-sensors');
             const data = await response.json();
             
-            // 1. NOT DETECTED (Niba sensor itariho)
             if (!data.detected) {
                 hardwareConnected = false;
                 btn.style.background = "#c62828"; 
@@ -393,7 +393,6 @@ async function connectSensors() {
                 document.getElementById('displayWaterAI').innerText = "...";
                 
             } else {
-                // 2. CONNECTED NYAKURI
                 hardwareConnected = true;
                 btn.innerText = d.btnConnected;
                 btn.style.background = "#2e7d32"; 
