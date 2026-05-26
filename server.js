@@ -14,18 +14,17 @@ app.use(express.static('./'));
 const activeApiKey = process.env.GROQ_API_KEY;
 const groq = new Groq({ apiKey: activeApiKey });
 
-// Amacode yemewe yo kwinjira mu masomo
 let VALID_ACCESS_CODES = ["PREMIUM_2026", "NYAMASHEKE_FISH_AI", "PATRICK_BOSS"];
 
-// Imibare sensors zizajya ziheraho (Urugero) mbere y'uko ESP32 yoherereza imibare nyakuri
+// 🔋 AMADATA Y'IBIPIMO BYA SENSORS
 let currentSensorData = {
     oxygen: 5.5,
     ph: 7.2,
     temp: 25.4,
-    lastUpdated: new Date().toLocaleTimeString()
+    lastUpdated: new Date().toLocaleTimeString(),
+    lastSeenTimestamp: 0 // Igihe icyuma giherukira kwaka (In Miliseconds)
 };
 
-// Gutunganya uburyo bwo kohereza Email mu gihe cy'icyago cy'amazi
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -56,10 +55,10 @@ app.post('/api/update-sensors', (req, res) => {
         currentSensorData.ph = parseFloat(ph).toFixed(1);
         currentSensorData.temp = parseFloat(temp).toFixed(1);
         currentSensorData.lastUpdated = new Date().toLocaleTimeString();
+        currentSensorData.lastSeenTimestamp = Date.now(); // Fata igihe ya kano kanya ESP32 ivugiye
 
         console.log(`[Sensor Sync] Received Data -> DO: ${oxygen}, pH: ${ph}, Temp: ${temp}`);
 
-        // Kohereza imbugure niba amazi yapfuye
         if (oxygen < 4.0 || ph < 6.5 || ph > 8.5 || temp < 20.0 || temp > 30.0) {
             let alertContent = `URGENT FISHPOND ALERT FROM REAL SENSORS!\n\nIbipimo by'amazi byageze mu gace kabi cyane:\n- Oxygen: ${oxygen} mg/L\n- pH: ${ph}\n- Ubushyuhe: ${temp} °C\n\nTabara kano kanya!`;
             sendEmailAlert("⚠️ Nyamasheke Smart Monitor: REAL-TIME CRITICAL ALERT", alertContent);
@@ -68,15 +67,25 @@ app.post('/api/update-sensors', (req, res) => {
         return res.json({ success: true, message: "Sensor data updated successfully!" });
     }
     
-    return res.status(400).json({ success: false, message: "Missing oxygen, ph or temp in body." });
+    return res.status(400).json({ success: false, message: "Missing parameters." });
 });
 
-// 🌐 2. ENDPOINT IHA FRONTEND AMACURU YA SENSORS
+// 🌐 2. ENDPOINT IPIMA NIBA SENSOR IRI DETECTION (Urashaka ko tuyireba)
 app.get('/api/live-sensors', (req, res) => {
-    res.json(currentSensorData);
+    // Reba niba ESP32 yigeze ivugisha server mu masegonda 60 ashize
+    let timeDifference = Date.now() - currentSensorData.lastSeenTimestamp;
+    
+    let isDetected = false;
+    if (currentSensorData.lastSeenTimestamp !== 0 && timeDifference < 60000) {
+        isDetected = true; // Sensor iriho kandi iri gukora
+    }
+    
+    res.json({
+        ...currentSensorData,
+        detected: isDetected
+    });
 });
 
-// 🌐 3. ENDPOINT YO KUGURA KONTI (REGISTER)
 app.post('/api/register', (req, res) => {
     const { name } = req.body;
     const cleanName = name.replace(/\s+/g, '').toUpperCase().substring(0, 7);
@@ -86,14 +95,12 @@ app.post('/api/register', (req, res) => {
     res.json({ success: true, code: generatedCode });
 });
 
-// 🌐 4. ENDPOINT YO KUZAMURA UBURENGANZIRA (LOGIN)
 app.post('/api/verify-code', (req, res) => {
     const { code } = req.body;
     if (VALID_ACCESS_CODES.includes(code.trim())) { res.json({ success: true }); }
     else { res.json({ success: false }); }
 });
 
-// 🌐 5. ENDPOINT IKORESHA LLA MA 3.3 AI NGO ISESENGURE CYANGWA IGISHE ISOMO
 app.post('/api/analyze', async (req, res) => {
     try {
         const { oxygen, ph, temp, serviceType, lang } = req.body;
