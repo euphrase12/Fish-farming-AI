@@ -3,34 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nyamasheke Smart Farm AI</title>
+    <title>Nyamasheke Smart Farm AI - Multilingual Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
-        .setup-box {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            max-width: 500px;
-            margin: 50px auto;
-        }
-        h1 { color: #0d47a1; }
-        p { color: #555; }
+        .active-tab { border-bottom: 4px solid #10b981; color: #10b981; font-weight: bold; }
+        .pulse-alert { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     </style>
 </head>
-<body>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-emerald-500 selection:text-slate-950">
 
-    <div class="setup-box">
-        <h1> Smart fish Farming AI</h1>
-        <p>Unit 1: Activity 1 - Umushinga umaze gutunganywa neza kuri GitHub Codespaces.</p>
-        <p style="color: green; font-weight: bold;">✅ Environment Setup Complete!</p>
-    </div>
+<div class="max-w-6xl mx-auto p-4 md:p-8">
+    
+    <header class="bg-slate-900 rounded-2xl p-6 shadow-2xl border border-slate-800 mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
+            <div class="text-center sm:text-left">
+                <h1 id="appTitle" class="text-2xl md:text-4xl font-black text-emerald-400">🌊 Fish-farming-AI</h1>
+                <p id="appSubtitle" class="text-slate-400 text-xs mt-1 font-mono">Nyamasheke Special Farming Crayfish Ltd • Production Hub</p>
+            </div>
+            
+            <div class="bg-slate-950 p-1.5 rounded-xl border border-slate-800 flex gap-1 text-xs font-mono">
+                <button onclick="setLanguage('rw')" id="langBtn_rw" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold cursor-pointer transition-all">🇷🇼 Kinyarwanda</button>
+                <button onclick="setLanguage('en')" id="langBtn_en" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 cursor-pointer transition-all">🇬🇧 English</button>
+                <button onclick="setLanguage('fr')" id="langBtn_fr" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 cursor-pointer transition-all">🇫🇷 Français</button>
+            </div>
+        </div>
+        
+        <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-left max-w-md mx-auto">
+            <label id="lblApiKey" class="block text-[11px] font-mono text-slate-400">🔑 Gemini API Key (Ijisho rya AI):</label>
+            <input type="password" id="geminiApiKey" class="w-full mt-1 p-2 bg-slate-900 border border-slate-700 rounded-md text-xs text-emerald-400 font-mono focus:outline-none" placeholder="AIzaSy...">
+        </div>
+    </header>
 
+    <nav class="bg-slate-900 rounded-xl p-2 border border-slate-800 flex justify-around mb-6 text-xs md:text-sm font-mono">
+        <button id="tabLessons" onclick="changeTab('lessons')" class="py-2 px-3 active-tab cursor-pointer">📚 <span id="navTab1">Amasomo</span></button>
+        <button id="tabMonitor" onclick="changeTab('monitor')" class="py-2 px-3 text-slate-400 cursor-pointer">📡 <span id="navTab2">Gupima Ibidaka</span></button>
+        <button id="tabLanding" onclick="changeTab('landing')" class="py-2 px-3 text-slate-400 cursor-pointer">🚀 <span id="navTab3">Landing Page & A/B</span></button>
+        <button id="tabDebug" onclick="changeTab('debug')" class="py-2 px-3 text-slate-400 cursor-pointer">🔬 <span id="navTab4">DevTools Lab</span></button>
+    </nav>
+
+    <main>
+        
+        <section id="viewLessons" class="bg-slate-900 rounded-2xl p-6 border border-slate-800">
+            <h3 id="lessonsHeading" class="text-lg font-bold text-slate-200 mb-4 font-mono">// Isanduku y'Amasomo y'Ubworozi bwa Kijyambere</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+                    <h4 id="lesson1Title" class="font-bold text-emerald-400 text-sm">Isomo rya 1: Gucunga amazi ya Crayfish</h4>
+                    <p id="lesson1Body" class="text-xs text-slate-300 mt-2 leading-relaxed">Crayfish zikenera amazi afite isuku n'umwuka uhagije (Oxygen). Ubushyuhe bwiza buri hagati ya 20°C kugeza kuri 25°C.</p>
+                </div>
+                <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+                    <h4 id="lesson2Title" class="font-bold text-emerald-400 text-sm">Isomo rya 2: Kugaburira no Kuryoshya umusaruro</h4>
+                    <p id="lesson2Body" class="text-xs text-slate-300 mt-2 leading-relaxed">Ibura ry'ibiryo bituma amakamba aryana (Cannibalism). Gaburira kabiri ku munsi, cyane cyane nimugoroba.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="viewMonitor" class="bg-slate-900 rounded-2xl p-6 border border-slate-800 hidden">
+            <h3 id="monitorHeading" class="text-lg font-bold text-slate-200 mb-4 font-mono">// Gupima Ibyangombwa by'Amazi & Amajwi y'Intabaza</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
+                <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+                    <span id="lblOxygen" class="text-xs text-slate-400 uppercase font-mono">Umwuka (Oxygen - pO2)</span>
+                    <strong class="text-2xl block text-red-400 mt-1 pulse-alert">3.2 mg/L</strong>
+                    <span id="alertOxygen" class="text-[10px] text-red-500 font-mono">🚨 Iri hasi cyane!</span>
+                </div>
+                <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+                    <span id="lblPh" class="text-xs text-slate-400 uppercase font-mono">Igipimo cya pH</span>
+                    <strong class="text-2xl block text-emerald-400 mt-1">7.4</strong>
+                    <span id="alertPh" class="text-[10px] text-emerald-500 font-mono">🟢 Iri mu murongo</span>
+                </div>
+                <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+                    <span id="lblTemp" class="text-xs text-slate-400 uppercase font-mono">Ubushyuhe (Temp)</span>
+                    <strong class="text-2xl block text-amber-400 mt-1">22.5°C</strong>
+                    <span id="alertTemp" class="text-[10px] text-amber-500 font-mono">🟢 Harashyushye neza</span>
+                </div>
+            </div>
+
+            <div class="text-center bg-slate-950 p-4 rounded-xl border border-slate-800">
+                <button onclick="playVoiceAlert()" id="btnVoiceTest" class="bg-red-600 hover:bg-red-700 text-white font-mono text-xs py-2 px-4 rounded-lg font-bold cursor-pointer">
+                    🔊 Umva IJWI RY'INTABAZA (Voice Alert Test)
+                </button>
+            </div>
+        </section>
+
+        <section id="viewLanding" class="bg-slate-900 rounded-2xl p-6 border border-slate-800 hidden">
+            <h3 id="landingHeading" class="text-sm font-mono text-slate-400 mb-4">// Pre-launch Traction & Traffic Gate</h3>
+            <div class="max-w-md mx-auto bg-white text-slate-900 p-6 rounded-xl shadow-2xl">
+                <h2 id="lpHeadline" class="text-xl font-black text-center text-slate-900">Wongere umusaruro w'amafi n'izuba rya Crayfish ukokesheje AI!</h2>
+                <p id="lpProblem" class="mt-3 text-xs bg-amber-50 p-3 border-l-4 border-amber-500 rounded text-slate-700">Ubworozi bw'amafi mu biyaga bya Nyamasheke buhomba kubera kubura oxygen mu mazi. Aborozi babura amakuru ku gihe.</p>
+                
+                <div class="mt-4 pt-4 border-t border-slate-100">
+                    <input type="email" id="waitlistEmail" class="w-full p-2 text-xs border border-slate-300 rounded focus:outline-none mb-2 text-slate-900">
+                    <button onclick="triggerWaitlistAlert()" id="lpCtaBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 rounded cursor-pointer">Saba kwinjira muri Waitlist</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="viewDebug" class="bg-slate-900 rounded-2xl p-6 border border-slate-800 hidden">
+            <h3 id="debugHeading" class="text-lg font-bold text-slate-200 mb-3 font-mono">// DevTools Simulated Diagnostics Lab</h3>
+            
+            <div class="flex gap-2 mb-4">
+                <button onclick="injectError('HTTP 500: Groq API Token rejected at live_pond_analytics.js:64')" id="btnTriggerCrash" class="bg-red-900/40 text-red-400 border border-red-800 hover:bg-red-900/60 px-3 py-1.5 text-xs font-mono rounded cursor-pointer">💥 Trigger API Crash Error</button>
+                <button onclick="askTeachMe()" id="btnRunTeachMe" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-mono font-bold px-4 py-1.5 text-xs rounded cursor-pointer">🔮 Run "Teach Me" Explanation</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
+                <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+                    <h4 id="lblConsoleTitle" class="text-red-400 border-b border-slate-800 pb-1 mb-2">Simulated DevTools Console:</h4>
+                    <div id="consoleLogBox" class="text-slate-400 italic">// Waiting for anomalies...</div>
+                </div>
+                <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+                    <h4 id="lblTeachMeTitle" class="text-amber-400 border-b border-slate-800 pb-1 mb-2">AI Teach-Me Breakdown Output:</h4>
+                    <div id="aiTeachMeOutput" class="text-slate-300 whitespace-pre-line leading-relaxed">// Diagnostics blueprint...</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+// CENTRAL TRANSLATION DICTIONARY (AI VENTURES MULTILINGUAL DATA HUB)
+const translations = {
+    rw: {
+        appTitle: "🌊 Fish-farming-AI",
+        appSubtitle: "Nyamasheke Special Farming Crayfish Ltd • Urwubako rw'Umusaruro",
+        lblApiKey: "🔑 Gemini API Key (Ijisho rya AI):",
+        navTab1: "Amasomo", navTab2: "Gupima Ibidaka", navTab3: "Landing Page & A/B", navTab4: "DevTools Lab",
+        lessonsHeading: "// Isanduku y'Amasomo y'Ubworozi bwa Kijyambere",
+        lesson1Title: "Isomo rya 1: Gucunga amazi ya Crayfish",
+        lesson1Body: "Crayfish zikenera amazi afite isuku n'umwuka uhagije (Oxygen). Ubushyuhe bwiza buri hagati ya 20°C kugeza kuri 25°C.",
+        lesson2Title: "Isomo rya 2: Kugaburira no Kuryoshya umusaruro",
+        lesson2Body: "Ibura ry'ibiryo bituma amakamba aryana (Cannibalism). Gaburira kabiri ku munsi, cyane cyane nimugoroba.",
+        monitorHeading: "// Gupima Ibyangombwa by'Amazi & Amajwi y'Intabaza",
+        lblOxygen: "Umwuka (Oxygen - pO2)", alertOxygen: "🚨 Iri hasi cyane!",
+        lblPh: "Igipimo cya pH", alertPh: "🟢 Iri mu murongo",
+        lblTemp: "Ubushyuhe (Temp)", alertTemp: "🟢 Harashyushye neza",
+        btnVoiceTest: "🔊 Umva IJWI RY'INTABAZA (Voice Alert Test)",
+        voiceScript: "Ikitonderwa cyihutirwa! Umwuka wa oxygen mu kidaka waguye munsi ya gatatu n'ibice bibiri. Nyamuneka fimbura imashini izana umwuka!",
+        voiceLang: "sw",
+        landingHeading: "// Pre-launch Traction & Traffic Gate",
+        lpHeadline: "Wongere umusaruro w'amafi n'izuba rya Crayfish ukokesheje AI!",
+        lpProblem: "Ubworozi bw'amafi mu biyaga bya Nyamasheke buhomba kubera kubura oxygen mu mazi. Aborozi babura amakuru ku gihe.",
+        lpPlaceholder: "Injiza Email cyangwa Nomero yawe...",
+        lpCtaBtn: "Saba kwinjira muri Waitlist",
+        waitlistAlert: "🎉 Murakoze! Mwanditswe kuri Waitlist ya Nyamasheke Smart Farm AI!",
+        debugHeading: "// DevTools Simulated Diagnostics Lab",
+        btnTriggerCrash: "💥 Trigger API Crash Error",
+        btnRunTeachMe: "🔮 Run \"Teach Me\" Explanation",
+        lblConsoleTitle: "Simulated DevTools Console:",
+        lblTeachMeTitle: "AI Teach-Me Breakdown Output:",
+        promptInstruction: "Explain this error to Patrick in clear, professional, and accessible Kinyarwanda. Follow the Teach Me pattern: 1. Root cause, 2. Conceptual fix strategy, 3. DevTools network analysis."
+    },
+    en: {
+        appTitle: "🌊 Fish-farming-AI",
+        appSubtitle: "Nyamasheke Special Farming Crayfish Ltd • Production Hub Dashboard",
+        lblApiKey: "🔑 Gemini API Key (AI Telemetry Vision):",
+        navTab1: "Syllabus Modules", navTab2: "Pond Telemetry", navTab3: "Landing Page & A/B", navTab4: "DevTools Engine",
+        lessonsHeading: "// Professional Aquaculture Syllabus Vault",
+        lesson1Title: "Lesson 1: Crayfish Water Quality Metrics",
+        lesson1Body: "Crayfish demand clean water and optimal dissolved oxygen (pO2). Ideal survival temperatures range precisely between 20°C and 25°C.",
+        lesson2Title: "Lesson 2: Feeding Regimes & Yield Retention",
+        lesson2Body: "Feed starvation directly induces extreme cannibalism among crustacea. Feed twice daily, primarily during peak nocturnal cycles.",
+        monitorHeading: "// Automated Realtime Water Telemetry & Voice Alarms",
+        lblOxygen: "Dissolved Oxygen (pO2)", alertOxygen: "🚨 Critical Hypoxia Event!",
+        lblPh: "Biochemical pH Status", alertPh: "🟢 Target Range Stable",
+        lblTemp: "Water Temperature", alertTemp: "🟢 Thermal State Optimal",
+        btnVoiceTest: "🔊 Test Emergency Audio Alert Broadcast",
+        voiceScript: "Critical emergency warning! Dissolved oxygen in pond index zero has dropped below three point two milligrams per liter. Activate the mechanical aeration pipeline immediately.",
+        voiceLang: "en",
+        landingHeading: "// High-Conversion Traction & Lead Capture Validation",
+        lpHeadline: "Maximize Commercial Crayfish Biomass via Generative AI Telemetry Models",
+        lpProblem: "Rural deep-pond aquaculture infrastructures suffer severe economic loss due to sudden hypoxic asphyxiation and lack of technical data pipelines.",
+        lpPlaceholder: "Enter your phone number or corporate email...",
+        lpCtaBtn: "Request Early Access Waitlist Token",
+        waitlistAlert: "🚀 Success! Your corporate early-access data token has been queued in the Master Waitlist.",
+        debugHeading: "// Sandbox Developer Tools & Logic Verification Lab",
+        btnTriggerCrash: "💥 Inject Backend Server Exceptions",
+        btnRunTeachMe: "🔮 Trigger AI 'Teach Me' Analysis Blueprint",
+        lblConsoleTitle: "Simulated DevTools Console Stack:",
+        lblTeachMeTitle: "AI Teach-Me Architectural Evaluation Report:",
+        promptInstruction: "Explain this error to Patrick in clear, professional English. Follow the Teach Me pattern: 1. Root cause analysis, 2. Conceptual code architecture solution, 3. Browser DevTools console trace validation."
+    },
+    fr: {
+        appTitle: "🌊 Fish-farming-AI",
+        appSubtitle: "Nyamasheke Special Farming Crayfish Ltd • Tableau de Bord",
+        lblApiKey: "🔑 Clé API Gemini (Vision de l'IA):",
+        navTab1: "Syllabus d'Élevage", navTab2: "Télémétrie des Étangs", navTab3: "Page d'Atterrissage", navTab4: "Moteur DevTools",
+        lessonsHeading: "// Modules de Formation Aquacole de Haute Qualité",
+        lesson1Title: "Leçon 1: Gestion des Paramètres Hydrauliques",
+        lesson1Body: "Les écrevisses nécessitent une eau pure et une saturation élevée en oxygène (pO2). La température idéale oscille entre 20°C et 25°C.",
+        lesson2Title: "Leçon 2: Protocoles Nutritionnels et Rendement",
+        lesson2Body: "Le manque de nourriture provoque un cannibalisme sévère chez les crustacés. Distribuez les rations deux fois par jour, surtout le soir.",
+        monitorHeading: "// Surveillance Hydrologique Directe et Alertes Vocales",
+        lblOxygen: "Oxygène Dissous (pO2)", alertOxygen: "🚨 Hypoxie Critique Détectée!",
+        lblPh: "Potentiel Hydrogène (pH)", alertPh: "🟢 Zone Stable Normale",
+        lblTemp: "Température Thermique", alertTemp: "🟢 Niveau Thermique Conforme",
+        btnVoiceTest: "🔊 Activer l'Alerte Vocale d'Urgence",
+        voiceScript: "Alerte de sécurité critique! Le niveau d'oxygène dissous est tombé en dessous de trois virgule deux milligrammes par litre. Veuillez activer les aérateurs de toute urgence.",
+        voiceLang: "fr",
+        landingHeading: "// Entonnoir de Conversion Publique et Capture de Trafic",
+        lpHeadline: "Optimisez la Biomasse des Écrevisses grâce à l'Intelligence Artificielle Évoluée",
+        lpProblem: "Les exploitations aquacoles locales subissent des pertes financières majeures à cause de l'asphyxie et du manque d'outils analytiques.",
+        lpPlaceholder: "Saisissez votre e-mail ou votre numéro...",
+        lpCtaBtn: "Rejoindre la Liste d'Attente VIP",
+        waitlistAlert: "🎉 Félicitations! Votre inscription sur la liste d'attente prioritaire a été validée avec succès.",
+        debugHeading: "// Simulateur DevTools & Diagnostic de Débogage",
+        btnTriggerCrash: "💥 Déclencher une Erreur d'API Serveur",
+        btnRunTeachMe: "🔮 Exécuter l'Analyse Spécifique 'Teach Me'",
+        lblConsoleTitle: "Sortie de la Console DevTools Simulée:",
+        lblTeachMeTitle: "Rapport d'Analyse d'Ingénierie de l'IA 'Teach Me':",
+        promptInstruction: "Explain this error to Patrick in elegant, professional French. Follow the Teach Me pattern: 1. Root cause, 2. Conceptual technical solution, 3. DevTools network/elements panel debugging workflow."
+    }
+};
+
+let currentLang = 'rw';
+
+function setLanguage(lang) {
+    currentLang = lang;
+    
+    // UI Button Toggles
+    ['rw', 'en', 'fr'].forEach(l => {
+        const btn = document.getElementById(`langBtn_${l}`);
+        if(l === lang) {
+            btn.className = "px-3 py-1.5 rounded-lg bg-emerald-600 text-white font-bold cursor-pointer transition-all";
+        } else {
+            btn.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 cursor-pointer transition-all";
+        }
+    });
+
+    // Hydrate DOM Elements from target dictionary language
+    const data = translations[lang];
+    document.getElementById('appTitle').innerText = data.appTitle;
+    document.getElementById('appSubtitle').innerText = data.appSubtitle;
+    document.getElementById('lblApiKey').innerText = data.lblApiKey;
+    document.getElementById('navTab1').innerText = data.navTab1;
+    document.getElementById('navTab2').innerText = data.navTab2;
+    document.getElementById('navTab3').innerText = data.navTab3;
+    document.getElementById('navTab4').innerText = data.navTab4;
+    document.getElementById('lessonsHeading').innerText = data.lessonsHeading;
+    document.getElementById('lesson1Title').innerText = data.lesson1Title;
+    document.getElementById('lesson1Body').innerText = data.lesson1Body;
+    document.getElementById('lesson2Title').innerText = data.lesson2Title;
+    document.getElementById('lesson2Body').innerText = data.lesson2Body;
+    document.getElementById('monitorHeading').innerText = data.monitorHeading;
+    document.getElementById('lblOxygen').innerText = data.lblOxygen;
+    document.getElementById('alertOxygen').innerText = data.alertOxygen;
+    document.getElementById('lblPh').innerText = data.lblPh;
+    document.getElementById('alertPh').innerText = data.alertPh;
+    document.getElementById('lblTemp').innerText = data.lblTemp;
+    document.getElementById('alertTemp').innerText = data.alertTemp;
+    document.getElementById('btnVoiceTest').innerText = data.btnVoiceTest;
+    document.getElementById('landingHeading').innerText = data.landingHeading;
+    document.getElementById('lpHeadline').innerText = data.lpHeadline;
+    document.getElementById('lpProblem').innerText = data.lpProblem;
+    document.getElementById('waitlistEmail').placeholder = data.lpPlaceholder;
+    document.getElementById('lpCtaBtn').innerText = data.lpCtaBtn;
+    document.getElementById('debugHeading').innerText = data.debugHeading;
+    document.getElementById('btnTriggerCrash').innerText = data.btnTriggerCrash;
+    document.getElementById('btnRunTeachMe').innerText = data.btnRunTeachMe;
+    document.getElementById('lblConsoleTitle').innerText = data.lblConsoleTitle;
+    document.getElementById('lblTeachMeTitle').innerText = data.lblTeachMeTitle;
+}
+
+// TAB MANAGEMENT CONTROL
+function changeTab(tabId) {
+    document.getElementById('viewLessons').classList.add('hidden');
+    document.getElementById('viewMonitor').classList.add('hidden');
+    document.getElementById('viewLanding').classList.add('hidden');
+    document.getElementById('viewDebug').classList.add('hidden');
+    document.getElementById('tabLessons').className = "py-2 px-3 text-slate-400 cursor-pointer";
+    document.getElementById('tabMonitor').className = "py-2 px-3 text-slate-400 cursor-pointer";
+    document.getElementById('tabLanding').className = "py-2 px-3 text-slate-400 cursor-pointer";
+    document.getElementById('tabDebug').className = "py-2 px-3 text-slate-400 cursor-pointer";
+
+    if(tabId === 'lessons') {
+        document.getElementById('viewLessons').classList.remove('hidden');
+        document.getElementById('tabLessons').className = "py-2 px-3 active-tab cursor-pointer";
+    } else if(tabId === 'monitor') {
+        document.getElementById('viewMonitor').classList.remove('hidden');
+        document.getElementById('tabMonitor').className = "py-2 px-3 active-tab cursor-pointer";
+    } else if(tabId === 'landing') {
+        document.getElementById('viewLanding').classList.remove('hidden');
+        document.getElementById('tabLanding').className = "py-2 px-3 active-tab cursor-pointer";
+    } else {
+        document.getElementById('viewDebug').classList.remove('hidden');
+        document.getElementById('tabDebug').className = "py-2 px-3 active-tab cursor-pointer";
+    }
+}
+
+// TEXT TO SPEECH MULTILINGUAL PIPELINE
+function playVoiceAlert() {
+    const data = translations[currentLang];
+    const msg = new SpeechSynthesisUtterance(data.voiceScript);
+    msg.lang = data.voiceLang;
+    window.speechSynthesis.speak(msg);
+}
+
+function triggerWaitlistAlert() {
+    alert(translations[currentLang].waitlistAlert);
+    document.getElementById('waitlistEmail').value = "";
+}
+
+// LIVE DEVTOOLS TELEMETRY CONTROL
+let currentError = "";
+function injectError(err) {
+    currentError = err;
+    document.getElementById('consoleLogBox').innerHTML = `<span class="text-red-400 bg-red-950/60 p-2 rounded border-l-4 border-red-500 block">[CRASH] ${err}</span>`;
+}
+
+// TEACH-ME API ROUTER INTEGRATION WITH AUTOMATED TARGET LANGUAGE INJECTION
+async function askTeachMe() {
+    const key = document.getElementById('geminiApiKey').value.trim();
+    if(!key) { alert(currentLang === 'rw' ? "⚠️ Banze ushyiremo Gemini API Key!" : "⚠️ Missing Gemini API Key!"); return; }
+    if(!currentError) { alert(currentLang === 'rw' ? "⚠️ Banze utere ikosa ukoresheje buto ituku!" : "⚠️ Please trigger an error first!"); return; }
+
+    const outBox = document.getElementById('aiTeachMeOutput');
+    outBox.innerText = currentLang === 'rw' ? "⏳ AI iri gusesengura..." : "⏳ AI analyzing telemetry stack...";
+
+    const selectedConfig = translations[currentLang];
+    const finalPrompt = `${selectedConfig.promptInstruction} Error context: "${currentError}". Remember to return formatted output with clean spacing.`;
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: [{ parts: [{ text: finalPrompt }] }] })
+        });
+        const resData = await response.json();
+        outBox.innerText = resData.candidates[0].content.parts[0].text;
+    } catch(e) {
+        outBox.innerText = "❌ Connection timeout or invalid API key configuration.";
+    }
+}
+</script>
 </body>
 </html>
