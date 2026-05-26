@@ -14,9 +14,10 @@ app.use(express.static('./'));
 const activeApiKey = process.env.GROQ_API_KEY;
 const groq = new Groq({ apiKey: activeApiKey });
 
+// Amacode yemewe yo kwinjira mu masomo
 let VALID_ACCESS_CODES = ["PREMIUM_2026", "NYAMASHEKE_FISH_AI", "PATRICK_BOSS"];
 
-// 🔋 AMADATA Y'IBIPIMO BYA SENSORS (Azahera ku mibare isanzwe, ESP32 yayahindura ahite ahinduka)
+// Imibare sensors zizajya ziheraho (Urugero) mbere y'uko ESP32 yoherereza imibare nyakuri
 let currentSensorData = {
     oxygen: 5.5,
     ph: 7.2,
@@ -24,6 +25,7 @@ let currentSensorData = {
     lastUpdated: new Date().toLocaleTimeString()
 };
 
+// Gutunganya uburyo bwo kohereza Email mu gihe cy'icyago cy'amazi
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -45,8 +47,7 @@ function sendEmailAlert(subject, messageText) {
     });
 }
 
-// 🌐 1. ENDPOINT YAKIRA AMACURU AVA KURI SENSOR (ESP32 cyangwa Arduino)
-// ESP32 izajya yorohereza amadata hano: http://your-codespace-url/api/update-sensors
+// 🌐 1. ENDPOINT YAKIRA AMACURU AVA KURI SENSOR (ESP32)
 app.post('/api/update-sensors', (req, res) => {
     const { oxygen, ph, temp } = req.body;
     
@@ -58,7 +59,7 @@ app.post('/api/update-sensors', (req, res) => {
 
         console.log(`[Sensor Sync] Received Data -> DO: ${oxygen}, pH: ${ph}, Temp: ${temp}`);
 
-        // 🚨 Kora check y'integuza niba sensor izanye ibintu bibi
+        // Kohereza imbugure niba amazi yapfuye
         if (oxygen < 4.0 || ph < 6.5 || ph > 8.5 || temp < 20.0 || temp > 30.0) {
             let alertContent = `URGENT FISHPOND ALERT FROM REAL SENSORS!\n\nIbipimo by'amazi byageze mu gace kabi cyane:\n- Oxygen: ${oxygen} mg/L\n- pH: ${ph}\n- Ubushyuhe: ${temp} °C\n\nTabara kano kanya!`;
             sendEmailAlert("⚠️ Nyamasheke Smart Monitor: REAL-TIME CRITICAL ALERT", alertContent);
@@ -70,11 +71,12 @@ app.post('/api/update-sensors', (req, res) => {
     return res.status(400).json({ success: false, message: "Missing oxygen, ph or temp in body." });
 });
 
-// 🌐 2. ENDPOINT IHA FRONTEND AMACURU YA SENSORS NYAKURI
+// 🌐 2. ENDPOINT IHA FRONTEND AMACURU YA SENSORS
 app.get('/api/live-sensors', (req, res) => {
     res.json(currentSensorData);
 });
 
+// 🌐 3. ENDPOINT YO KUGURA KONTI (REGISTER)
 app.post('/api/register', (req, res) => {
     const { name } = req.body;
     const cleanName = name.replace(/\s+/g, '').toUpperCase().substring(0, 7);
@@ -84,12 +86,14 @@ app.post('/api/register', (req, res) => {
     res.json({ success: true, code: generatedCode });
 });
 
+// 🌐 4. ENDPOINT YO KUZAMURA UBURENGANZIRA (LOGIN)
 app.post('/api/verify-code', (req, res) => {
     const { code } = req.body;
     if (VALID_ACCESS_CODES.includes(code.trim())) { res.json({ success: true }); }
     else { res.json({ success: false }); }
 });
 
+// 🌐 5. ENDPOINT IKORESHA LLA MA 3.3 AI NGO ISESENGURE CYANGWA IGISHE ISOMO
 app.post('/api/analyze', async (req, res) => {
     try {
         const { oxygen, ph, temp, serviceType, lang } = req.body;
