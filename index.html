@@ -1,335 +1,46 @@
-<!DOCTYPE html>
-<html lang="rw">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nyamasheke Smart Monitor & Academy AI</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; }
-        .container { max-width: 750px; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: 0 auto; }
-        
-        .header-section { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e0e0e0; padding-bottom: 15px; margin-bottom: 20px; }
-        h1 { color: #0d47a1; margin: 0; font-size: 26px; font-weight: bold; }
-        .subtitle { color: #555; margin-top: 5px; font-weight: 500; }
-        select.lang-select { padding: 8px 12px; border-radius: 6px; border: 2px solid #0d47a1; font-weight: bold; background: white; color: #0d47a1; cursor: pointer; }
-
-        /* Paywall Section - Create Account */
-        .auth-section { background: #e3f2fd; border: 2px solid #1e88e5; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 25px; }
-        .register-box { background: white; padding: 20px; border-radius: 8px; border: 1px solid #90caf9; margin-bottom: 15px; text-align: left; }
-        .register-box input { width: 95%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        
-        .auth-section input.code-input { padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid #ccc; width: 60%; max-width: 300px; text-align: center; font-weight: bold; }
-        .btn-auth { background: #2e7d32; color: white; border: none; padding: 12px 25px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
-        .btn-auth:hover { background: #1b5e20; }
-        .btn-reg { background: #0d47a1; color: white; border: none; padding: 12px 18px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; }
-        
-        .success-box { background: #e8f5e9; border: 1px solid #a5d6a7; color: #1b5e20; padding: 15px; border-radius: 6px; margin-bottom: 15px; font-weight: bold; display: none; text-align: left; }
-
-        /* Blur Content */
-        .protected-content { filter: blur(5px); pointer-events: none; opacity: 0.4; transition: all 0.5s ease; }
-        .unlocked { filter: none !important; pointer-events: auto !important; opacity: 1 !important; }
-
-        /* Sensors Map */
-        .monitor-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
-        .sensor-card { background: #eef2f7; padding: 25px 15px; border-radius: 12px; text-align: center; border: 1px solid #cfd8dc; }
-        .sensor-card h3 { margin: 0 0 15px 0; color: #37474f; font-size: 16px; font-weight: 600; }
-        .sensor-value { font-size: 32px; font-weight: bold; color: #0d47a1; margin-bottom: 5px; }
-        .sensor-unit { font-size: 14px; color: #78909c; }
-        
-        .status-bar { text-align: center; font-weight: bold; color: #2e7d32; margin-bottom: 20px; background: #e8f5e9; padding: 12px; border-radius: 8px; border: 1px solid #c8e6c9; }
-        .alert-popup-box { background: #ffebee; border: 2px solid #ef5350; color: #b71c1c; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; display: none; }
-
-        /* Buttons Box */
-        .action-box { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        .btn-action { color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: background 0.3s; text-align: center; }
-        .btn-green { background-color: #2e7d32; }
-        .btn-green:hover { background-color: #1b5e20; }
-        .btn-orange { background-color: #e65100; }
-        .btn-orange:hover { background-color: #b33f00; }
-        
-        /* Gasanduku ka Result y'amazi gusa */
-        .results-section { margin-top: 25px; padding: 20px; background: #f9fbfd; border-left: 6px solid #2e7d32; border-radius: 8px; border: 1px solid #e1e8ed; }
-        pre { white-space: pre-wrap; font-family: inherit; font-size: 15px; line-height: 1.6; color: #333; margin: 0; }
-
-        /* 📘 URUKUTA RW'AMASOMO (ACADEMY WALL) */
-        .academy-wall { display: none; background: #fafafa; border: 2px solid #e65100; padding: 25px; border-radius: 12px; margin-top: 20px; }
-        .academy-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #ffe0b2; padding-bottom: 10px; }
-        .btn-back { background: #37474f; color: white; border: none; padding: 8px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-        .academy-body { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ffe0b2; min-height: 200px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="header-section">
-        <div>
-            <h1 id="title-text">Nyamasheke Smart Monitor & Academy AI 🐟</h1>
-            <div id="subtitle-text" class="subtitle">Ubugenzuzi bw'Amazi n'Ishuri ry'Ubworozi 100% mu gihe nyacyo</div>
-        </div>
-        <div>
-            <select id="langSelect" class="lang-select" onchange="changeLanguage()">
-                <option value="rw">Kinyarwanda</option>
-                <option value="en">English</option>
-            </select>
-        </div>
-    </div>
-
-    <div id="authBox" class="auth-section">
-        <h3 id="auth-title">📝 Fungura Konti (Create Account) ngo utangire Kwiga</h3>
-        
-        <div id="regForm" class="register-box">
-            <strong style="color: #0d47a1; font-size: 16px;">🆕 Iyandikishe hano kano kanya:</strong><br><br>
-            <label style="font-size: 13px; font-weight: bold; display:block;">Izina Ryawe / Full Name:</label>
-            <input type="text" id="regName" placeholder="Urugero: Karisa Jean">
-            
-            <label style="font-size: 13px; font-weight: bold; display:block;">Email yawe / Email Address:</label>
-            <input type="email" id="regEmail" placeholder="Urugero: karisa@gmail.com">
-            
-            <button class="btn-reg" onclick="registerUser()">Kora Konti / Create Account & Get Code</button>
-        </div>
-
-        <div id="successBox" class="success-box"></div>
-
-        <p id="auth-desc" style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #333;">Injiza Access Code yawe hano ngo uwinjire mu masomo:</p>
-        <input type="text" id="accessCodeInput" class="code-input" placeholder="Ugereranyo: KARISA-XXXX">
-        <br>
-        <button class="btn-auth" onclick="verifyAccessCode()">Kwinjira / Login</button>
-        <div id="authError" style="color: red; font-weight: bold; margin-top: 10px; display: none;">❌ Code ntabwo ari yo! Gerageza neza.</div>
-    </div>
-
-    <div id="protectedContent" class="protected-content">
-        
-        <div id="mainDashboardView">
-            <div id="liveAlertPopup" class="alert-popup-box"></div>
-
-            <div class="monitor-box">
-                <div class="sensor-card">
-                    <h3 id="lbl-oxygen">DO (Oxygen)</h3>
-                    <div id="live-oxygen" class="sensor-value">--</div>
-                    <span class="sensor-unit">mg/L</span>
-                </div>
-                <div class="sensor-card">
-                    <h3 id="lbl-ph">Water pH</h3>
-                    <div id="live-ph" class="sensor-value">--</div>
-                    <span class="sensor-unit">0 - 14 pH</span>
-                </div>
-                <div class="sensor-card">
-                    <h3 id="lbl-temp">Temperature</h3>
-                    <div id="live-temp" class="sensor-value">--</div>
-                    <span class="sensor-unit">°C</span>
-                </div>
-            </div>
-
-            <div id="monitor-status" class="status-bar">🔄 Ibyuma biri mu mazi...</div>
-
-            <div class="action-box">
-                <button id="btn-lesson" class="btn-action btn-orange" onclick="openAcademyWall()">📘 Injira mu Rukuta rw'Amasomo (Open Academy)</button>
-                <button id="btn-analyze" class="btn-action btn-green" onclick="triggerWaterAnalysis()">🐟 Isesengure ry'Amazi kano kanya (Water Status)</button>
-            </div>
-
-            <div class="results-section">
-                <h3 id="lbl-results" style="color: #2e7d32; margin-top:0;">✨ Ibisubizo n'Isesengura rya AI ku Mazi:</h3>
-                <div id="displayResults">Kanda kuri "Isesengure ry'Amazi" hejuru ngo ubutumwa bwa AI buze hano...</div>
-            </div>
-        </div>
-
-        <div id="academyWallView" class="academy-wall">
-            <div class="academy-header">
-                <h2 style="margin:0; color:#e65100;" id="academy-title-text">🏫 Urukuta rw'Amasomo y'Ubworozi (100% Complete Course)</h2>
-                <button class="btn-back" onclick="closeAcademyWall()">⬅️ Subira Inyuma</button>
-            </div>
-            <div class="academy-body">
-                <div id="displayAcademyLesson">⏳ Iri gupakira amasomo usesuye ku rukuta oku bwikora...</div>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-<script>
-let currentOxygen = 5.3;
-let currentPh = 7.4;
-let currentTemp = 26.5;
-let currentLang = 'rw';
-let isUnlocked = false;
-
-const translations = {
-    rw: {
-        title: "Nyamasheke Smart Monitor & Academy AI 🐟",
-        subtitle: "Ubugenzuzi bw'Amazi n'Ishuri ry'Ubworozi 100% mu gihe nyacyo",
-        oxygen: "DO (Oxygen)",
-        ph: "Water pH",
-        temp: "Temperature",
-        statusGood: "✅ STATUS: Amazi ameze neza. Ubugenzuzi n'Ishuri birafunguye...",
-        statusBad: "🚨 WARNING: Ibipimo by'amazi byamanutse cyane!",
-        btnAnalyze: "🐟 Isesengure ry'Amazi kano kanya (Water Status)",
-        btnLesson: "📘 Injira mu Rukuta rw'Amasomo (Open Academy)",
-        lblResults: "✨ Ibisubizo n'Isesengura rya AI ku Mazi:",
-        aiThinking: "⏳ Llama 3.3 AI iri gusesengura ibipimo by'amazi kano kanya...",
-        aiLearning: "⏳ Llama 3.3 AI iri gutegura isomo ryuzuye rya 100% ku rukuta...",
-        authTitle: "📝 Fungura Konti (Create Account) ngo utangire Kwiga",
-        authWrong: "❌ Code ntabwo ari yo! Gerageza neza.",
-        alertOxygen: "🚨 ICYAGO CY'IJORO: Oxygen yamanutse munsi ya 4.0 mg/L!",
-        alertPh: "🚨 WARNING: pH y'amazi ntabwo ikwiye!",
-        alertTemp: "🚨 WARNING: Ubushyuhe bwamanutse cyangwa bwazamutse!"
-    },
-    en: {
-        title: "Nyamasheke Smart Monitor & Academy AI 🐟",
-        subtitle: "Water Monitoring & 100% Complete Fish Farming Academy",
-        oxygen: "DO (Oxygen)",
-        ph: "Water pH",
-        temp: "Temperature",
-        statusGood: "✅ STATUS: Water quality optimal. Academy is unlocked...",
-        statusBad: "🚨 WARNING: Water parameters dropped critically!",
-        btnAnalyze: "🐟 Check Live Water Status",
-        btnLesson: "📘 Injira mu Rukuta rw'Amasomo (Open Academy)",
-        lblResults: "✨ Ibisubizo n'Isesengura rya AI ku Mazi:",
-        aiThinking: "⏳ Llama 3.3 AI is analyzing water parameters right now...",
-        aiLearning: "⏳ Llama 3.3 AI is generating your 100% comprehensive lesson on the wall...",
-        authTitle: "📝 Create Account to Start Learning",
-        authWrong: "❌ Invalid Code! Please try again.",
-        alertOxygen: "🚨 CRITICAL ALERT: Dissolved Oxygen dropped below 4.0 mg/L!",
-        alertPh: "🚨 WARNING: Water pH level is unstable!",
-        alertTemp: "🚨 WARNING: Extreme Water Temperature detected!"
-    }
-};
-
-function changeLanguage() {
-    currentLang = document.getElementById('langSelect').value;
-    const t = translations[currentLang];
-    
-    document.getElementById('title-text').innerText = t.title;
-    document.getElementById('subtitle-text').innerText = t.subtitle;
-    document.getElementById('lbl-oxygen').innerText = t.oxygen;
-    document.getElementById('lbl-ph').innerText = t.ph;
-    document.getElementById('lbl-temp').innerText = t.temp;
-    document.getElementById('btn-analyze').innerText = t.btnAnalyze;
-    document.getElementById('btn-lesson').innerText = t.btnLesson;
-    document.getElementById('lbl-results').innerText = t.lblResults;
-    document.getElementById('auth-title').innerText = t.authTitle;
-    updateLiveSensors();
-}
-
-async function registerUser() {
-    const name = document.getElementById('regName').value;
-    if (!name) { alert("Andika izina ryawe rwose!"); return; }
-    try {
-        const response = await fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name })
-        });
-        const data = await response.json();
-        if (data.success) {
-            const successBox = document.getElementById('successBox');
-            successBox.innerHTML = `🎉 Konti yawe yafungutse neza, Murakoze ${name}!<br>🔑 Code yawe yo kwinjira mu masomo ni: <strong style="font-size: 18px; color:#1b5e20;">${data.code}</strong><br>• Koresha iyi code hasi maze ukande Kwinjira utangire isomo rya 100%.`;
-            successBox.style.display = 'block';
-            document.getElementById('regForm').style.display = 'none';
-        }
-    } catch (e) { alert("Error creating account."); }
-}
-
-async function verifyAccessCode() {
-    const code = document.getElementById('accessCodeInput').value;
-    const errorDiv = document.getElementById('authError');
-    try {
-        const response = await fetch('/api/verify-code', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code: code })
-        });
-        const data = await response.json();
-        if (data.success) {
-            isUnlocked = true;
-            errorDiv.style.display = 'none';
-            document.getElementById('authBox').style.display = 'none';
-            document.getElementById('protectedContent').classList.add('unlocked');
-            updateLiveSensors();
-        } else {
-            errorDiv.innerText = translations[currentLang].authWrong;
-            errorDiv.style.display = 'block';
-        }
-    } catch (e) { errorDiv.innerText = "Error communicating with server."; errorDiv.style.display = 'block'; }
-}
-
-function updateLiveSensors() {
+async function updateLiveSensors() {
     if (!isUnlocked) return;
 
-    currentOxygen = (Math.random() * (6.5 - 3.5) + 3.5).toFixed(1);
-    currentPh = (Math.random() * (9.0 - 5.5) + 5.5).toFixed(1);
-    currentTemp = (Math.random() * (32.0 - 18.0) + 18.0).toFixed(1);
+    try {
+        // Guhamagara Backend ngo ifate ibipimo by'uburyo bwa Live bya Sensor
+        const response = await fetch('/api/live-sensors');
+        const data = await response.json();
 
-    document.getElementById('live-oxygen').innerText = currentOxygen;
-    document.getElementById('live-ph').innerText = currentPh;
-    document.getElementById('live-temp').innerText = currentTemp;
+        currentOxygen = data.oxygen;
+        currentPh = data.ph;
+        currentTemp = data.temp;
 
-    const t = translations[currentLang];
-    const statusBar = document.getElementById('monitor-status');
-    const alertPopup = document.getElementById('liveAlertPopup');
+        document.getElementById('live-oxygen').innerText = currentOxygen;
+        document.getElementById('live-ph').innerText = currentPh;
+        document.getElementById('live-temp').innerText = currentTemp;
 
-    let alertMessages = [];
-    if (currentOxygen < 4.0) { alertMessages.push(t.alertOxygen); }
-    if (currentPh < 6.5 || currentPh > 8.5) { alertMessages.push(t.alertPh); }
-    if (currentTemp < 20.0 || currentTemp > 30.0) { alertMessages.push(t.alertTemp); }
+        const t = translations[currentLang];
+        const statusBar = document.getElementById('monitor-status');
+        const alertPopup = document.getElementById('liveAlertPopup');
 
-    if (alertMessages.length > 0) {
-        alertPopup.innerHTML = alertMessages.join("<br><br>");
-        alertPopup.style.display = "block";
-        statusBar.innerHTML = t.statusBad;
-        statusBar.style.background = "#ffebee";
-        statusBar.style.color = "#c62828";
-    } else {
-        alertPopup.style.display = "none";
-        statusBar.innerHTML = t.statusGood;
-        statusBar.style.background = "#e8f5e9";
-        statusBar.style.color = "#2e7d32";
+        // Kongeraho igihe sensor yaherukaga guhunduka
+        statusBar.innerHTML = `${t.statusGood} | Synchronized: ${data.lastUpdated}`;
+
+        let alertMessages = [];
+        if (currentOxygen < 4.0) { alertMessages.push(t.alertOxygen); }
+        if (currentPh < 6.5 || currentPh > 8.5) { alertMessages.push(t.alertPh); }
+        if (currentTemp < 20.0 || currentTemp > 30.0) { alertMessages.push(t.alertTemp); }
+
+        if (alertMessages.length > 0) {
+            alertPopup.innerHTML = alertMessages.join("<br><br>");
+            alertPopup.style.display = "block";
+            statusBar.innerHTML = `${t.statusBad} | Sync: ${data.lastUpdated}`;
+            statusBar.style.background = "#ffebee";
+            statusBar.style.color = "#c62828";
+        } else {
+            alertPopup.style.display = "none";
+            statusBar.style.background = "#e8f5e9";
+            statusBar.style.color = "#2e7d32";
+        }
+    } catch (err) {
+        document.getElementById('monitor-status').innerText = "⚠️ Error fetching live hardware sensor data...";
     }
 }
 
+// Buri masegonda 4, frontend izajya isaba backend data nshya sensor yohereje
 setInterval(updateLiveSensors, 4000);
-
-/* FUNGA NA FUNGURA URUKUTA RW'AMASOMO */
-function openAcademyWall() {
-    document.getElementById('mainDashboardView').style.display = 'none';
-    document.getElementById('academyWallView').style.display = 'block';
-    triggerAcademyLesson();
-}
-
-function closeAcademyWall() {
-    document.getElementById('academyWallView').style.display = 'none';
-    document.getElementById('mainDashboardView').style.display = 'block';
-}
-
-/* AI IYEREKEYE SENSORS GUSA */
-async function triggerWaterAnalysis() {
-    const displayResults = document.getElementById('displayResults');
-    displayResults.innerHTML = translations[currentLang].aiThinking;
-    try {
-        const response = await fetch('/api/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ oxygen: currentOxygen, ph: currentPh, temp: currentTemp, serviceType: 'analyze', lang: currentLang })
-        });
-        const data = await response.json();
-        displayResults.innerHTML = data.error ? `🚨 Error: ${data.error}` : `<pre>${data.text}</pre>`;
-    } catch (err) { displayResults.innerHTML = `🚨 Error: ${err.message}`; }
-}
-
-/* AI IYEREKEYE ISOMO RY'URUKUTA RW'ISHURI */
-async function triggerAcademyLesson() {
-    const displayAcademy = document.getElementById('displayAcademyLesson');
-    displayAcademy.innerHTML = translations[currentLang].aiLearning;
-    try {
-        const response = await fetch('/api/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ oxygen: currentOxygen, ph: currentPh, temp: currentTemp, serviceType: 'lesson', lang: currentLang })
-        });
-        const data = await response.json();
-        displayAcademy.innerHTML = data.error ? `🚨 Error: ${data.error}` : `<pre>${data.text}</pre>`;
-    } catch (err) { displayAcademy.innerHTML = `🚨 Error: ${err.message}`; }
-}
-</script>
-
-</body>
-</html>

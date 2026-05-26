@@ -16,6 +16,14 @@ const groq = new Groq({ apiKey: activeApiKey });
 
 let VALID_ACCESS_CODES = ["PREMIUM_2026", "NYAMASHEKE_FISH_AI", "PATRICK_BOSS"];
 
+// 🔋 AMADATA Y'IBIPIMO BYA SENSORS (Azahera ku mibare isanzwe, ESP32 yayahindura ahite ahinduka)
+let currentSensorData = {
+    oxygen: 5.5,
+    ph: 7.2,
+    temp: 25.4,
+    lastUpdated: new Date().toLocaleTimeString()
+};
+
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -37,6 +45,36 @@ function sendEmailAlert(subject, messageText) {
     });
 }
 
+// 🌐 1. ENDPOINT YAKIRA AMACURU AVA KURI SENSOR (ESP32 cyangwa Arduino)
+// ESP32 izajya yorohereza amadata hano: http://your-codespace-url/api/update-sensors
+app.post('/api/update-sensors', (req, res) => {
+    const { oxygen, ph, temp } = req.body;
+    
+    if (oxygen !== undefined && ph !== undefined && temp !== undefined) {
+        currentSensorData.oxygen = parseFloat(oxygen).toFixed(1);
+        currentSensorData.ph = parseFloat(ph).toFixed(1);
+        currentSensorData.temp = parseFloat(temp).toFixed(1);
+        currentSensorData.lastUpdated = new Date().toLocaleTimeString();
+
+        console.log(`[Sensor Sync] Received Data -> DO: ${oxygen}, pH: ${ph}, Temp: ${temp}`);
+
+        // 🚨 Kora check y'integuza niba sensor izanye ibintu bibi
+        if (oxygen < 4.0 || ph < 6.5 || ph > 8.5 || temp < 20.0 || temp > 30.0) {
+            let alertContent = `URGENT FISHPOND ALERT FROM REAL SENSORS!\n\nIbipimo by'amazi byageze mu gace kabi cyane:\n- Oxygen: ${oxygen} mg/L\n- pH: ${ph}\n- Ubushyuhe: ${temp} °C\n\nTabara kano kanya!`;
+            sendEmailAlert("⚠️ Nyamasheke Smart Monitor: REAL-TIME CRITICAL ALERT", alertContent);
+        }
+
+        return res.json({ success: true, message: "Sensor data updated successfully!" });
+    }
+    
+    return res.status(400).json({ success: false, message: "Missing oxygen, ph or temp in body." });
+});
+
+// 🌐 2. ENDPOINT IHA FRONTEND AMACURU YA SENSORS NYAKURI
+app.get('/api/live-sensors', (req, res) => {
+    res.json(currentSensorData);
+});
+
 app.post('/api/register', (req, res) => {
     const { name } = req.body;
     const cleanName = name.replace(/\s+/g, '').toUpperCase().substring(0, 7);
@@ -48,92 +86,35 @@ app.post('/api/register', (req, res) => {
 
 app.post('/api/verify-code', (req, res) => {
     const { code } = req.body;
-    if (VALID_ACCESS_CODES.includes(code.trim())) {
-        res.json({ success: true });
-    } else {
-        res.json({ success: false });
-    }
+    if (VALID_ACCESS_CODES.includes(code.trim())) { res.json({ success: true }); }
+    else { res.json({ success: false }); }
 });
 
 app.post('/api/analyze', async (req, res) => {
     try {
         const { oxygen, ph, temp, serviceType, lang } = req.body;
-        
-        if (oxygen < 4.0 || ph < 6.5 || ph > 8.5 || temp < 20.0 || temp > 30.0) {
-            let alertContent = `URGENT FISHPOND ALERT!\n\nIbipimo by'amazi byageze mu gace kabi cyane:\n- Oxygen: ${oxygen} mg/L\n- pH: ${ph}\n- Ubushyuhe: ${temp} °C\n\nTabara kano kanya!`;
-            sendEmailAlert("⚠️ Nyamasheke Smart Monitor: CRITICAL ALERT", alertContent);
-        }
-
         let systemPrompt = "";
         
         if (lang === "rw") {
             if (serviceType === "analyze") {
-                systemPrompt = `Uri umuhanga bwikora bwa AI kuri Nyamasheke Special Farming Crayfish Ltd. Subiza mu Kinyarwanda cyonyine. Tanga isesengura ry'ibipimo hanyuma utange inama 2 zifatika.`;
+                systemPrompt = `Uri umuhanga bwikora bwa AI kuri Nyamasheke Special Farming Crayfish Ltd. Subiza mu Kinyarwanda cyonyine. Tanga isesengura ry'ibipimo nyakuri byavuye kuri sensor hanyuma utange inama 2 zifatika.`;
             } else {
-                // 📘 ISOMO RYUZUYE 100% MU KINYARWANDA
-                systemPrompt = `Uri Umwarimu n'Umujyanama Mukuru w'Ubworozi bw'Amafi mu Rwanda. Tanga ISOMO RYUZUYE 100% rishingiye ku nkingi 4 z'ubworozi bw'amafi bugezweho mu Kinyarwanda cy'umuco kandi kinyamwufu. 
-                Gura isomo utya:
-                
-                📘 NYAMASHEKE FISH FARMING ACADEMY (Isomo Ryuzuye Ry'Ubworozi)
-                
-                ■ IGBCE CYA 1: GUTEGURA ICYESE (Pond Construction & Management)
-                - Uburyo bwo guhitamo ubutaka n'amazi meza adahumanye.
-                - Kurinda amazi no kuyashiramo imiti isukura mbere yo kuzanamo amafi (Liming & Fertilization).
-                
-                ■ IGICE CYA 2: IKIBRAZO CY'IJORO NA OXYGEN (Water Quality Parameters)
-                - Sobanura impamvu 80% by'igihombo cy'amafi biba nijoro (kubera phytoplankton no kubura oxygen).
-                - Ibipimo ngenderwaho: Oxygen (>5.0 mg/L), pH (6.5 - 8.5), n'ubushyuhe (20°C - 30°C).
-                - Uburyo bwo gukoresha Aerators cyangwa guhindura amazi nijoro.
-                
-                ■ IGICE CYA 3: IKIGERO CYO GUGABURIRA N'IBIRYO (Feeding & Nutrition)
-                - Uko batoranya ibiryo bifite poroteyine (Protein content > 30%) bitewe n'ikigero cy'ifi (Fingerlings vs Adults).
-                - Isaha n'uburyo bwo kugaburira bwikora (Floating pellets vs Sinking pellets).
-                
-                ■ IGICE CYA 4: ACCOUNTRABILITY N'UMUSARURO (Harvesting & Business)
-                - Uko barinda indwara z'amafi no gukurikirana ub kura bwayo (Sampling).
-                - Ubucuruzi bw'ifi n'uko bategura isoko.
-                
-                Subiza mu buryo bugaragara neza bwanditse ku manirandanga (Bullet points) kugira ngo umworozi mushya ahite asobanukirwa 100% nta gihombo!`;
+                systemPrompt = `Uri Umwarimu n'Umujyanama Mukuru w'Ubworozi bw'Amafi mu Rwanda. Tanga ISOMO RYUZUYE 100% rishingiye ku nkingi 4 z'ubworozi bw'amafi bugezweho mu Kinyarwanda cy'umuco kandi kinyamwufu...`;
             }
         } else {
             if (serviceType === "analyze") {
-                systemPrompt = `You are an automated AI Aquaculture Expert. Respond strictly in simple English. Give water health report and 2 actionable steps.`;
+                systemPrompt = `You are an automated AI Aquaculture Expert. Respond strictly in simple English. Give water health report based on sensor hardware and 2 actionable steps.`;
             } else {
-                // 📘 ISOMO RYUZUYE 100% MU CYONGEREZA
-                systemPrompt = `You are an Expert Fish Farming Lecturer. Provide a 100% COMPREHENSIVE TRAINING LESSON structured into 4 foundational pillars:
-                
-                📘 NYAMASHEKE FISH FARMING ACADEMY (Complete Masterclass)
-                
-                ■ MODULE 1: POND PREPARATION & MANAGEMENT
-                - Soil selection, pond lining, and initialization (liming and natural fertilization).
-                
-                ■ MODULE 2: THE WATER QUALITY & THE NIGHT-TIME OXYGEN CHALLENGE
-                - Deep dive into why 80% of fish losses occur at night due to dissolved oxygen drops.
-                - Critical thresholds: DO (>5.0 mg/L), pH (6.5 - 8.5), and Temperature (20°C - 30°C).
-                - Use of aerators and urgent mitigation strategies.
-                
-                ■ MODULE 3: FEEDING STRATEGIES & NUTRITION
-                - Protein-rich diets (>30% protein) for different growth stages.
-                - Feeding frequencies, timing, and minimizing water pollution from overfeeding.
-                
-                ■ MODULE 4: DISEASES CONTROL & BUSINESS HARVESTING
-                - Bio-security, regular sampling, and scaling production for the market.
-                
-                Format with clean bullet points and clear professional headings. Make it 100% ready for a new user to start learning.`;
+                systemPrompt = `You are an Expert Fish Farming Lecturer. Provide a 100% COMPREHENSIVE TRAINING LESSON structured into 4 foundational pillars...`;
             }
         }
 
         const userPrompt = `Parameters: Oxygen = ${oxygen} mg/L, pH = ${ph}, Temp = ${temp} °C. Language: ${lang}`;
-
         const completion = await groq.chat.completions.create({
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userPrompt }
-            ],
+            messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }],
             model: "llama-3.3-70b-versatile",
             temperature: 0.5
         });
-
         res.json({ text: completion.choices[0].message.content });
     } catch (error) {
         console.error(error);
