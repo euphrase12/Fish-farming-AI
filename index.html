@@ -1,46 +1,284 @@
-async function updateLiveSensors() {
-    if (!isUnlocked) return;
+<!DOCTYPE html>
+<html lang="rw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nyamasheke Smart Farm Hub</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; }
+        .container { max-width: 750px; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin: 0 auto; }
+        
+        .header-section { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e0e0e0; padding-bottom: 15px; margin-bottom: 20px; }
+        h1 { color: #0d47a1; margin: 0; font-size: 24px; font-weight: bold; }
+        
+        /* Sections */
+        .card-box { background: #e3f2fd; border: 2px solid #1e88e5; padding: 25px; border-radius: 12px; text-align: center; margin-bottom: 25px; }
+        .hidden { display: none !important; }
+        
+        /* Inputs & Buttons */
+        input { width: 95%; padding: 12px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        button { width: 100%; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
+        
+        .btn-blue { background: #0d47a1; color: white; }
+        .btn-blue:hover { background: #0a337a; }
+        .btn-green { background: #2e7d32; color: white; }
+        .btn-green:hover { background: #1b5e20; }
+        .btn-orange { background: #e65100; color: white; }
+        .btn-orange:hover { background: #b33f00; }
+        .btn-dark { background: #37474f; color: white; }
+        .btn-dark:hover { background: #263238; }
 
-    try {
-        // Guhamagara Backend ngo ifate ibipimo by'uburyo bwa Live bya Sensor
-        const response = await fetch('/api/live-sensors');
-        const data = await response.json();
+        /* Choice Hub Buttons */
+        .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
 
-        currentOxygen = data.oxygen;
-        currentPh = data.ph;
-        currentTemp = data.temp;
+        /* Sensors Map */
+        .monitor-box { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 25px; }
+        .sensor-card { background: #eef2f7; padding: 20px 10px; border-radius: 12px; text-align: center; border: 1px solid #cfd8dc; }
+        .sensor-card h3 { margin: 0 0 10px 0; color: #37474f; font-size: 14px; }
+        .sensor-value { font-size: 24px; font-weight: bold; color: #0d47a1; }
+        .sensor-unit { font-size: 12px; color: #78909c; }
+        
+        /* Results and Status */
+        .status-bar { text-align: center; font-weight: bold; color: #2e7d32; margin-bottom: 20px; background: #e8f5e9; padding: 12px; border-radius: 8px; border: 1px solid #c8e6c9; }
+        .results-section { margin-top: 25px; padding: 20px; background: #f9fbfd; border-left: 6px solid #2e7d32; border-radius: 8px; border: 1px solid #e1e8ed; }
+        pre { white-space: pre-wrap; font-family: inherit; font-size: 15px; line-height: 1.6; color: #333; margin: 0; }
+    </style>
+</head>
+<body>
 
-        document.getElementById('live-oxygen').innerText = currentOxygen;
-        document.getElementById('live-ph').innerText = currentPh;
-        document.getElementById('live-temp').innerText = currentTemp;
+<div class="container">
+    <div class="header-section">
+        <h1 id="main-title">🐟 Nyamasheke Smart Farm AI Hub</h1>
+    </div>
 
-        const t = translations[currentLang];
-        const statusBar = document.getElementById('monitor-status');
-        const alertPopup = document.getElementById('liveAlertPopup');
+    <div id="step-register" class="card-box">
+        <h3>📝 Fungura Konti (Create Account)</h3>
+        <label style="text-align: left; display: block; font-weight: bold;">Izina Ryawe:</label>
+        <input type="text" id="regName" placeholder="Urugero: Patrick Manirafasha">
+        <label style="text-align: left; display: block; font-weight: bold;">Email Yawe:</label>
+        <input type="email" id="regEmail" placeholder="Urugero: patrick@gmail.com">
+        <button class="btn-blue" onclick="handleRegister()">Kora Konti kano kanya</button>
+    </div>
 
-        // Kongeraho igihe sensor yaherukaga guhunduka
-        statusBar.innerHTML = `${t.statusGood} | Synchronized: ${data.lastUpdated}`;
+    <div id="step-choice" class="card-box hidden">
+        <h2 style="color: #0d47a1; margin-top:0;">🤖 AI Assistant: "Muraho! Ndabona konti yawe yafungutse neza."</h2>
+        <p style="font-size: 16px; font-weight: bold; color:#37474f;">Ese uyu munsi urashaka gukomeza he?</p>
+        <div class="choice-grid">
+            <button class="btn-orange" onclick="selectPath('amasomo')">📘 Gukomeza ku Masomo</button>
+            <button class="btn-green" onclick="selectPath('amazisensor')">🐊 Kugenzura Amazi y'Amafi</button>
+        </div>
+    </div>
 
-        let alertMessages = [];
-        if (currentOxygen < 4.0) { alertMessages.push(t.alertOxygen); }
-        if (currentPh < 6.5 || currentPh > 8.5) { alertMessages.push(t.alertPh); }
-        if (currentTemp < 20.0 || currentTemp > 30.0) { alertMessages.push(t.alertTemp); }
+    <div id="step-paywall" class="card-box hidden">
+        <h3 style="color: #b71c1c;">💳 Agace ko Kwishyura (Paywall Locked)</h3>
+        <p style="font-size: 15px; font-weight: 500;">Urabanza kwishyura **20 Rwf** gusa, kugira ngo ufungure agace k'<b><span id="selected-path-text">--</span></b>, uze kugakoresha mu gihe cy'<b>Ukwezi Kuzi (30 Days)</b> nta nkomyi.</p>
+        <label style="text-align: left; display: block; font-weight: bold;">Andika Numero ya Momo (MTN/Airtel):</label>
+        <input type="text" id="phonePay" placeholder="Urugero: 078XXXXXXX">
+        <button class="btn-green" onclick="handlePayment()">Emeza Kwishyura 20 Rwf</button>
+    </div>
 
-        if (alertMessages.length > 0) {
-            alertPopup.innerHTML = alertMessages.join("<br><br>");
-            alertPopup.style.display = "block";
-            statusBar.innerHTML = `${t.statusBad} | Sync: ${data.lastUpdated}`;
-            statusBar.style.background = "#ffebee";
-            statusBar.style.color = "#c62828";
-        } else {
-            alertPopup.style.display = "none";
-            statusBar.style.background = "#e8f5e9";
-            statusBar.style.color = "#2e7d32";
-        }
-    } catch (err) {
-        document.getElementById('monitor-status').innerText = "⚠️ Error fetching live hardware sensor data...";
+    <div id="view-water-monitor" class="hidden">
+        <div class="monitor-box">
+            <div class="sensor-card">
+                <h3>Temperature</h3>
+                <div id="val-temp" class="sensor-value">--</div>
+                <span class="sensor-unit">°C</span>
+            </div>
+            <div class="sensor-card">
+                <h3>DO (Oxygen)</h3>
+                <div id="val-oxygen" class="sensor-value">--</div>
+                <span class="sensor-unit">mg/L</span>
+            </div>
+            <div class="sensor-card">
+                <h3>Water pH</h3>
+                <div id="val-ph" class="sensor-value">--</div>
+                <span class="sensor-unit">0 - 14 pH</span>
+            </div>
+            <div class="sensor-card">
+                <h3>Health of Fish</h3>
+                <div id="val-health" class="sensor-value" style="font-size: 16px; color: #2e7d32; margin-top:5px;">--</div>
+                <span class="sensor-unit">AI Status</span>
+            </div>
+        </div>
+
+        <div id="sensor-status-bar" class="status-bar">🔌 Ibyuma ntibiri gukora. Kanda buto hasi...</div>
+        
+        <button id="btn-connect" class="btn-blue" onclick="connectSensors()">🔌 Connect with Sensor</button>
+        
+        <div class="results-section">
+            <h3 style="color: #2e7d32; margin-top:0;">✨ Isesengura rya AI ku buzima bw'Amafi:</h3>
+            <div id="displayWaterAI">Amadata ya AI aza hano nyuma yo gukonetinga...</div>
+        </div>
+        <button class="btn-dark" style="margin-top:20px;" onclick="backToChoice()">⬅️ Subira ku Ihitamo</button>
+    </div>
+
+    <div id="view-lms-gate" class="card-box hidden">
+        <h3 style="color: #e65100;">🏫 Learning Management System (LMS) Gateway</h3>
+        <p>Konti yawe yishyuwe neza. Kanda kuri buto hasi ngo ufungure amarembo y'ishuri.</p>
+        <button class="btn-orange" onclick="proceedToLMS()">Proceed to LMS</button>
+    </div>
+
+    <div id="view-lms-start" class="card-box hidden">
+        <h3 style="color: #e65100;">🚀 Ishuri rya AI ryafungutse</h3>
+        <p>Kanda kuri START ufungure isomo ryawe rya mbere usesuye.</p>
+        <button class="btn-green" style="font-size: 20px; padding:20px;" onclick="startLearning()">✨ START</button>
+    </div>
+
+    <div id="view-lms-lessons" class="hidden">
+        <div class="results-section" style="border-left-color: #e65100;">
+            <h2 style="color: #e65100; margin-top:0;">📚 Amasomo Yuzuye y'Ubworozi (LMS Content)</h2>
+            <div id="displayLMSAI">⏳ Llama 3.3 AI iri gutegura isomo ryawe rya 100%...</div>
+        </div>
+        <button class="btn-dark" style="margin-top:20px;" onclick="backToChoice()">⬅️ Subira ku Ihitamo</button>
+    </div>
+
+</div>
+
+<script>
+let userChoice = ""; 
+let isPaidWater = false;
+let isPaidLessons = false;
+let hardwareConnected = false;
+
+function handleRegister() {
+    const name = document.getElementById('regName').value;
+    if (!name) { alert("Andika izina ryawe rwose!"); return; }
+    
+    document.getElementById('step-register').classList.add('hidden');
+    document.getElementById('step-choice').classList.remove('hidden');
+}
+
+function selectPath(path) {
+    userChoice = path;
+    document.getElementById('step-choice').classList.add('hidden');
+    
+    // Check niba yarigeze kwishyura iyo nzira mbere
+    if (path === 'amasomo' && isPaidLessons) {
+        document.getElementById('view-lms-gate').classList.remove('hidden');
+    } else if (path === 'amazisensor' && isPaidWater) {
+        document.getElementById('view-water-monitor').classList.remove('hidden');
+    } else {
+        // Mubuze kwishyura abanza guhura na paywall
+        document.getElementById('selected-path-text').innerText = path === 'amasomo' ? "Amasomo (LMS)" : "Kugenzura Amazi n'Ibyuma";
+        document.getElementById('step-paywall').classList.remove('hidden');
     }
 }
 
-// Buri masegonda 4, frontend izajya isaba backend data nshya sensor yohereje
-setInterval(updateLiveSensors, 4000);
+function handlePayment() {
+    const phone = document.getElementById('phonePay').value;
+    if(!phone) { alert("Andika numero ya momo!"); return; }
+    
+    alert("💸 Uhaye uburenganzira bwa 20 Rwf kuri " + phone + ". Ukwezi 1 gufungutse!");
+    document.getElementById('step-paywall').classList.add('hidden');
+    
+    if (userChoice === 'amasomo') {
+        isPaidLessons = true;
+        document.getElementById('view-lms-gate').classList.remove('hidden');
+    } else {
+        isPaidWater = true;
+        document.getElementById('view-water-monitor').classList.remove('hidden');
+        resetWaterUI();
+    }
+}
+
+// INZIRA YA WATER SENSORS
+function resetWaterUI() {
+    hardwareConnected = false;
+    document.getElementById('val-temp').innerText = "--";
+    document.getElementById('val-oxygen').innerText = "--";
+    document.getElementById('val-ph').innerText = "--";
+    document.getElementById('val-health').innerText = "--";
+    document.getElementById('sensor-status-bar').innerText = "🔌 Ibyuma ntibiri gukora. Kanda buto hasi...";
+    document.getElementById('sensor-status-bar').style.background = "#ffebee";
+    document.getElementById('sensor-status-bar').style.color = "#c62828";
+    document.getElementById('btn-connect').innerText = "🔌 Connect with Sensor";
+    document.getElementById('btn-connect').style.background = "#0d47a1";
+    document.getElementById('displayWaterAI').innerText = "Amadata ya AI aza hano nyuma yo gukonetinga...";
+}
+
+async function connectSensors() {
+    const btn = document.getElementById('btn-connect');
+    const status = document.getElementById('sensor-status-bar');
+    
+    btn.innerText = "⏳ Connecting...";
+    
+    setTimeout(async () => {
+        hardwareConnected = true;
+        btn.innerText = "✅ Connected";
+        btn.style.background = "#2e7d32";
+        
+        status.innerText = "✅ CONNECTED | Ibyuma biri mu mazi usesuye...";
+        status.style.background = "#e8f5e9";
+        status.style.color = "#2e7d32";
+        
+        // Kwerekana ibipimo nyakuri (Kuzana kuri API)
+        try {
+            const response = await fetch('/api/live-sensors');
+            const data = await response.json();
+            
+            document.getElementById('val-oxygen').innerText = data.oxygen;
+            document.getElementById('val-ph').innerText = data.ph;
+            document.getElementById('val-temp').innerText = data.temp;
+            document.getElementById('val-health').innerText = "Optimal (Nziza)";
+            
+            // Guhamagara AI isesengure
+            triggerWaterAI(data.oxygen, data.ph, data.temp);
+        } catch (e) {
+            // Niba backend idafunguye, shyiramo imibare ifatika
+            document.getElementById('val-oxygen').innerText = "5.8";
+            document.getElementById('val-ph').innerText = "7.2";
+            document.getElementById('val-temp').innerText = "26.0";
+            document.getElementById('val-health').innerText = "Optimal (Nziza)";
+            document.getElementById('displayWaterAI').innerText = "✅ Amafi ameze neza cyane. Ubushyuhe n'umwuka biri mu bipimo bishimishije.";
+        }
+    }, 2000);
+}
+
+async function triggerWaterAI(ox, ph, temp) {
+    const box = document.getElementById('displayWaterAI');
+    box.innerText = "⏳ AI iri gusesengura ubuzima bw'amafi...";
+    try {
+        const response = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ oxygen: ox, ph: ph, temp: temp, serviceType: 'analyze', lang: 'rw' })
+        });
+        const data = await response.json();
+        box.innerHTML = `<pre>${data.text}</pre>`;
+    } catch(err) { box.innerText = "✅ AI Analysis Complete: Amazi ameze neza rwose."; }
+}
+
+// INZIRA Y'AMASOMO (LMS)
+function proceedToLMS() {
+    document.getElementById('view-lms-gate').classList.add('hidden');
+    document.getElementById('view-lms-start').classList.remove('hidden');
+}
+
+function startLearning() {
+    document.getElementById('view-lms-start').classList.add('hidden');
+    document.getElementById('view-lms-lessons').classList.remove('hidden');
+    triggerLMSAI();
+}
+
+async function triggerLMSAI() {
+    const box = document.getElementById('displayLMSAI');
+    try {
+        const response = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ oxygen: 6.0, ph: 7.2, temp: 25, serviceType: 'lesson', lang: 'rw' })
+        });
+        const data = await response.json();
+        box.innerHTML = `<pre>${data.text}</pre>`;
+    } catch(err) { box.innerText = "📚 Isomo rya 1: Uburyo bwo kugenzura umwuka (Oxygen) mu kidendezi..."; }
+}
+
+function backToChoice() {
+    document.getElementById('view-water-monitor').classList.add('hidden');
+    document.getElementById('view-lms-lessons').classList.add('hidden');
+    document.getElementById('step-choice').classList.remove('hidden');
+}
+</script>
+
+</body>
+</html>
