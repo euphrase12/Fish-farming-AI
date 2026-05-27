@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-dark-bg text-slate-100;
+}
+
+input, select {
+  @apply focus:outline-none focus:ring-2 focus:ring-amber-accent transition-all;
+}
