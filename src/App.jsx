@@ -1,63 +1,88 @@
 import React, { useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
 
-function App() {
-  const [problem, setProblem] = useState('ubushyuhe bwamazi bunganiki');
-  const [results, setResults] = useState('');
+// Amakuru yawe y'ukuri ya Supabase twavanye kuri ecran yawe
+const supabaseUrl = "https://tmpyhgahaktullkfrgtm.supabase.co";
+const supabaseAnonKey = "sb_publishable_2g13AFP7w84gv1kqfdYq-w_VPr_5C0d"; 
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+export default function App() {
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
 
-  const handleSave = () => {
-    localStorage.setItem('core_problem', problem);
-    alert('Problem saved in localStorage!');
-  };
-
-  const handleAnalyze = async () => {
-    setLoading(true);
-    setResults('Groq AI (Llama 3.3) iri gusesengura amakuru, tegereza gake...');
-    
+  const handleLogin = async (e) => {
+    e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ problem })
+      setLoading(true);
+      setMessage('');
+      
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
       });
       
-      const data = await response.json();
-      if (data.error) {
-        setResults(`🚨 Ikosa: ${data.error}`);
-      } else {
-        setResults(data.text);
-      }
-    } catch (err) {
-      setResults(`🚨 Ikosa ry'ikoranabuhanga: ${err.message}`);
+      if (error) throw error;
+      setMessage('Itegereze imeri yawe! Supabase ikohereje link yo kwinjira (Magic Link).');
+    } catch (error) {
+      setMessage(`Ikibazo: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: '700px', margin: '40px auto', padding: '20px', fontFamily: 'Arial', background: '#fff', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-      <h2 style={{ textAlign: 'center', color: '#0d6efd' }}>Feedback Analyzer</h2>
-      <p style={{ textAlign: 'center', color: 'gray', fontStyle: 'italic' }}>Find patterns across all your feedback</p>
+    <div style={{
+      padding: '40px', 
+      textAlign: 'center', 
+      fontFamily: 'sans-serif', 
+      maxWidth: '400px', 
+      margin: '60px auto',
+      backgroundColor: '#111827',
+      color: 'white',
+      borderRadius: '12px',
+      boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
+    }}>
+      <h2 style={{ color: '#38bdf8' }}>Aquaculture Intelligence Platform 🐟</h2>
+      <p style={{ color: '#9ca3af' }}>Yinjize imeri yawe hano ngo uhawe link yo kwinjira kuri Dashboard:</p>
       
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>Enter the Core Problem Statement:</label>
-        <textarea 
-          style={{ width: '100%', padding: '12px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}
-          rows="4" 
-          value={problem}
-          onChange={(e) => setProblem(e.target.value)}
+      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+        <input 
+          type="email" 
+          placeholder="Andika imeri yawe (e.g. name@gmail.com)" 
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          style={{ 
+            padding: '12px', 
+            borderRadius: '6px', 
+            border: '1px solid #374151', 
+            fontSize: '16px',
+            backgroundColor: '#1f2937',
+            color: 'white'
+          }}
         />
-      </div>
-
-      <button onClick={handleSave} style={{ width: '100%', padding: '12px', background: '#ffc107', fontWeight: 'bold', border: 'none', borderRadius: '4px', cursor: 'pointer', marginBottom: '10px' }}>Save Problem</button>
-      <button onClick={handleAnalyze} disabled={loading} style={{ width: '100%', padding: '12px', background: '#198754', color: 'white', fontWeight: 'bold', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-        {loading ? 'Analyzing...' : 'Analyze All Feedback'}
-      </button>
-
-      <h3 style={{ marginTop: '25px' }}>AI Analysis Results:</h3>
-      <div style={{ background: '#f8f9fa', padding: '15px', borderLeft: '4px solid #198754', whiteSpace: 'pre-wrap' }}>{results}</div>
+        <button 
+          type="submit"
+          disabled={loading}
+          style={{
+            padding: '12px',
+            backgroundColor: '#0284c7',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '16px',
+            transition: 'background-color 0.2s'
+          }}
+        >
+          {loading ? 'Irimo koherereza...' : 'Nkoherereza Link yo Kwinjira'}
+        </button>
+      </form>
+      {message && <p style={{ marginTop: '20px', fontWeight: 'bold', color: '#34d399' }}>{message}</p>}
     </div>
   );
 }
-
-export default App;
