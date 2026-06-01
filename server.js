@@ -1,66 +1,63 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-
-// Gushyira mu bikorwa dotenv ngo isome .env file niba ihari
-dotenv.config();
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Umutekano w'Imiyoboro (CORS): Gufungurira amapaji yose uburenganzira bwo gusoma amakuru
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type']
-}));
+app.use(cors());
 app.use(express.json());
 
-// ==========================================
-// ROUTE 1: Telemetry Data & Fish Health (Lesson 10 & 11)
-// ==========================================
-app.get('/api/pond-status', (req, res) => {
-    // Ibi ni ibipimo biva mu kidaka byerekanwa na Sensor AI
-    const pondMetrics = {
-        oxygen: 3.2, 
-        ph: 7.4,
-        temperature: 22.5,
-        fishHealth: "POOR (Hypoxia Stress / Ubuzima buri mu kaga)"
-    };
-    res.json(pondMetrics);
+const PORT = process.env.PORT || 5000;
+
+app.post('/api/analyze', async (req, res) => {
+  // Isoma imibare hamwe n'ururimi (language) biturutse muli frontend
+  const { temperature, ph, oxygen, language } = req.body;
+
+  const apiKey = process.env.API_KEY || process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: "API Key is completely missing." });
+  }
+
+  // System prompt itegeka AI gukoresha ururimi umu-user yahisemo neza
+  const systemPrompt = `You are a professional Aquaculture AI Telemetry Assistant.
+Analyze the provided parameters: Temperature, pH, and Dissolved Oxygen.
+CRITICAL INSTRUCTION: You must respond 100% in the following language: "${language}".
+Format your response with:
+1. Health Status (State if conditions are excellent, safe, or critical).
+2. Concise Biological Analysis (Explain the numbers to the farmer).
+3. 3 Direct Action Steps (Clear bullet points on what to do next).
+Keep the style educational and friendly. Max length: 150 words.`;
+
+  const userPrompt = `Telemetry values: Temperature: ${temperature}°C, pH: ${ph}, Dissolved Oxygen: ${oxygen} mg/L. Language requested: ${language}`;
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama3-8b-8192',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.2
+      })
+    });
+
+    const data = await response.json();
+    if (data.choices && data.choices[0]) {
+      res.json({ result: data.choices[0].message.content });
+    } else {
+      res.status(500).json({ error: "No response from AI brain." });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error." });
+  }
 });
 
-// ==========================================
-// ROUTE 2: AI Teach-Me Engine (Lesson 3 & 12)
-// ==========================================
-app.post('/api/teach-me', async (req, res) => {
-    const { errorContext, language } = req.body;
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-    if (!GEMINI_API_KEY) {
-        return res.status(500).json({ error: "Server error: Missing Gemini API Key in .env file." });
-    }
-
-    try {
-        const prompt = `Explain this aquaculture system error to a fish farmer in professional ${language === 'rw' ? 'Kinyarwanda cyanditse neza' : 'English'}. Context: ${errorContext}`;
-        
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
-        
-        const data = await response.json();
-        res.json({ breakdown: data.candidates[0].content.parts[0].text });
-    } catch (e) {
-        res.status(500).json({ error: "Internal AI Engine operational error." });
-    }
-});
-
-// Tangiza server ku muhora wa 0.0.0.0 ngo Codespaces ikwemerere kuyibona
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Fish-Farming-AI Server is operational on port ${PORT}`);
-});// Paste iyi code ku mpera kabisa ya server.js kugira ngo ikureho rya kosa rya "Cannot GET /"
-app.get('/', (req, res) => {
-    res.send("<h1>🌊 Fish-Farming-AI Backend iri gukora neza cyane Patrick!</h1>");
+app.listen(PORT, () => {
+  console.log(`🚀 Fish-Farming-AI Server is operational on port ${PORT}`);
 });

@@ -1,125 +1,161 @@
 import streamlit as st
-from supabase import create_client, Client
+import google.generativeai as genai
+import os
 
-# Gufungura Supabase Credentials binyuze muri Secrets za Streamlit
-url: str = st.secrets["SUPABASE_URL"]
-key: str = st.secrets["SUPABASE_KEY"]
-supabase: Client = create_client(url, key)
+# 1. GUHINDURA URURIMI (LANGUAGE CONFIGURATION)
+# Kubika ururimi umworozi yahisemo muli session. Ururimi rw'ibanze ni Ikinyarwanda ('RW')
+if "lang" not in st.session_state:
+    st.session_state.lang = "RW"
 
-st.title("🐟 Fish Farming AI - Founder's Toolkit")
+# Inkoranyamagambo y'amagambo aza muli App (Translation Dictionary)
+translations = {
+    "RW": {
+        "title": "Nyamasheke Smart Farm AI 🐟",
+        "subtitle": "Igice gipima amazi n'ubuzima bw'amafi (Fish Health)",
+        "temp": "UBUSHYUHE",
+        "ph": "IGIPIMO CYA PH",
+        "oxygen": "UMWUKA / OXYGEN",
+        "status": "UBUZIMA BW'AMAFI",
+        "no_sensor": "🚨 NTA CHUMA CYA SENSOR KIGARAGARA",
+        "not_detected": "NTABWO CYABONETSE",
+        "alert_title": "⚠️ Sisitemu y'Impururu / Live Alert System",
+        "alert_danger": "🚨 MITYAZO/IBYAGO: Amazi ntagaburira amafi neza ubu ngubu!",
+        "alert_safe": "✅ Umutekano w'amazi umeze neza cyane! Nta byago bihari ubu.",
+        "chat_title": "🤖 Mworozi AI - Mujyanama wawe mu Bworozi",
+        "chat_caption": "Baza ikibazo cyose cyerekeye ubworozi bw'amafi...",
+        "chat_placeholder": "Andika ikibazo cyako hano...",
+        "ai_prompt": "Uri inzobere mu bworozi bw'amafi mu Rwanda. Subiza uyu mworozi mu buryo bwiza kandi muli uru rurimi: Kinyarwanda. Ikibazo: "
+    },
+    "GB": {
+        "title": "Nyamasheke Smart Farm AI 🐟",
+        "subtitle": "Realtime Water Telemetry & Fish Health Core",
+        "temp": "TEMPERATURE",
+        "ph": "PH LEVEL",
+        "oxygen": "DISSOLVED OXYGEN",
+        "status": "FISH HEALTH STATUS",
+        "no_sensor": "🚨 NO SENSOR DETECTED",
+        "not_detected": "NOT DETECTED",
+        "alert_title": "⚠️ Live Alert System",
+        "alert_danger": "🚨 DANGER/RISK: Water parameters are toxic for fish right now!",
+        "alert_safe": "✅ Water parameters are perfectly safe! No risk detected.",
+        "chat_title": "🤖 Farmer AI - Your Aquaculture Assistant",
+        "chat_caption": "Ask any question regarding fish farming...",
+        "chat_placeholder": "Type your question here...",
+        "ai_prompt": "You are an expert in aquaculture and fish farming. Answer this farmer professionally in English. Question: "
+    },
+    "FR": {
+        "title": "Nyamasheke Smart Farm AI 🐟",
+        "subtitle": "Télémetrie de l'Eau & Santé des Poissons",
+        "temp": "TEMPÉRATURE",
+        "ph": "NIVEAU DE PH",
+        "oxygen": "OXYGÈNE DISSOUS",
+        "status": "STATUT DE SANTÉ DES POISSONS",
+        "no_sensor": "🚨 AUCUN CAPTEUR DÉTECTÉ",
+        "not_detected": "NON DÉTECTÉ",
+        "alert_title": "⚠️ Système d'Alerte en Direct",
+        "alert_danger": "🚨 DANGER/RISQUE: Les paramètres de l'eau sont toxiques pour les poissons!",
+        "alert_safe": "✅ L'eau est parfaitement saine! Aucun risque détecté.",
+        "chat_title": "🤖 Éleveur AI - Votre Assistant Aquacole",
+        "chat_caption": "Posez n'importe quelle question sur la pisciculture...",
+        "chat_placeholder": "Écrivez votre question ici...",
+        "ai_prompt": "Vous êtes un expert en aquaculture et pisciculture. Répondez à cet éleveur de manière professionnelle en Français. Question: "
+    }
+}
 
-# Gucunga Session State (Kureba niba Admin yinjiye n'uburyo bwo guhindura data)
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-if "editing_row" not in st.session_state:
-    st.session_state.editing_row = None
+# Gufata amagambo y'ururimi ruri gukora ubu
+lang_code = st.session_state.lang
+text = translations[lang_code]
 
-# ==========================================
-# PUBLIC FORM (Kwakira Feedback nshya)
-# ==========================================
-st.subheader("📝 Leave your Feedback")
-with st.form("feedback_form", clear_on_submit=True):
-    name = st.text_input("Izina ryawe (Name):")
-    role = st.selectbox("Inshingano (Role/Type):", ["Fish Farmer", "Researcher", "Investor", "Other"])
-    feedback = st.text_area("Feedback:")
-    
-    submit_button = st.form_submit_button("Submit Form")
+# 2. GUSHIRAHO UTUBUTO TW'INDIMI (LANGUAGE SELECTOR)
+# Turatwubaka hejuru iburyo nk'uko twatubonye kuri paji yawe
+col_title, col_langs = st.columns([3, 1])
 
-if submit_button:
-    if name and feedback:
-        try:
-            data = {"name": name, "role": role, "feedback": feedback}
-            # Amabwiriza avuga ko data yinjira gusa (Anonymous INSERT)
-            supabase.table("stakeholders").insert(data).execute()
-            st.success(f"🎉 Thank you {name}! Your feedback has been saved to Supabase.")
-        except Exception as e:
-            st.error(f"Error saving to database: {e}")
-    else:
-        st.warning("Please fill in both name and feedback fields.")
+with col_title:
+    st.title(text["title"])
 
+with col_langs:
+    # Gukora utubuto tw'indimi nka radio buttons cyangwa selectbox ihita ihindura paji
+    selected_lang = st.selectbox("Language / Ururimi", ["RW", "GB", "FR"], index=["RW", "GB", "FR"].index(lang_code))
+    if selected_lang != st.session_state.lang:
+        st.session_state.lang = selected_lang
+        st.rerun() # Gusubiramo paji kugira ngo amagambo ahinduke ako kanya
+
+st.markdown(f"### {text['subtitle']}")
+
+# 3. IMBORENAHAMWE Y'IBYUMA (TELEMETRY VISUALS)
+col1, col2, col3, col4 = st.columns(4)
+
+temp_val = st.session_state.get('current_temp', 18) 
+ph_val = st.session_state.get('current_ph', 5.5)     
+oxygen_val = st.session_state.get('current_oxygen', 3.0) 
+
+with col1:
+    st.metric(text["temp"], f"{temp_val} °C" if temp_val else "--")
+with col2:
+    st.metric(text["ph"], f"{ph_val}" if ph_val else "--")
+with col3:
+    st.metric(text["oxygen"], f"{oxygen_val} mg/L" if oxygen_val else "--")
+with col4:
+    status_text = text["alert_danger"] if (temp_val < 20 or ph_val < 6.5) else text["alert_safe"]
+    st.write(f"**{text['status']}**")
+    st.caption(text["not_detected"])
+
+st.warning(text["no_sensor"])
+
+# 4. SISITEMU Y'IMPURURU (ALERT SYSTEM WITH TRANSLATION)
 st.markdown("---")
+st.subheader(text["alert_title"])
 
-# ==========================================
-# ADMIN ACCESS (LOGIN, EDIT & DELETE)
-# ==========================================
-st.subheader("🔐 Administrative Access")
-
-if not st.session_state.logged_in:
-    with st.expander("Admin Login"):
-        email = st.text_input("Admin Email:")
-        password = st.text_input("Password:", type="password")
-        login_btn = st.button("Login as Admin")
-        
-        if login_btn:
-            # Uburyo bworoshye kandi bwizewe bwo kwinjira nka Admin
-            if email == "admin@crayfish.com" and password == "Aiva2026":
-                st.session_state.logged_in = True
-                st.success("Successfully logged in as Admin!")
-                st.rerun()
-            else:
-                st.error("Login failed. Check credentials.")
-else:
-    st.info("🔓 You are logged in as Administrator.")
-    if st.button("Log Out"):
-        st.session_state.logged_in = False
-        st.session_state.editing_row = None
-        st.rerun()
-        
-    st.subheader("📋 Stakeholder Management Panel")
+if temp_val < 20 or temp_val > 32 or ph_val < 6.5 or ph_val > 8.5 or oxygen_val < 4.0:
+    st.error(text["alert_danger"])
     
-    try:
-        # Guhamagara data zose ziri muri Supabase
-        res = supabase.table("stakeholders").select("*").order("id").execute()
-        records = res.data
+    # Utubandiko tw'impururu mu ndimi zitandukanye
+    if lang_code == "RW":
+        if temp_val < 20: st.write(f"• Ubushyuhe buri hasi cyane ({temp_val}°C). Amafi ashobora gupfa cyangwa ntagure!")
+        if ph_val < 6.5: st.write(f"• Amazi arasharira cyane (pH: {ph_val}). Shaka umuti cyangwa uhindure amazi!")
+        if oxygen_val < 4.0: st.write(f"• Umwuka muli mazi uri hasi cyane ({oxygen_val} mg/L). Canira moteri izana umwuka!")
+    elif lang_code == "GB":
+        if temp_val < 20: st.write(f"• Temperature too low ({temp_val}°C). Fish might stop growing or die.")
+        if ph_val < 6.5: st.write(f"• Water is too acidic (pH: {ph_val}). Please treat or change water.")
+        if oxygen_val < 4.0: st.write(f"• Oxygen level too low ({oxygen_val} mg/L). Turn on the aerator immediately!")
+    elif lang_code == "FR":
+        if temp_val < 20: st.write(f"• Température trop basse ({temp_val}°C). Les poissons risquent de mourir.")
+        if ph_val < 6.5: st.write(f"• L'eau est trop acide (pH: {ph_val}). Traitez ou changez l'eau.")
+        if oxygen_val < 4.0: st.write(f"• Niveau d'oxygène trop bas ({oxygen_val} mg/L). Activez l'aérateur immédiatement!")
+else:
+    st.success(text["alert_safe"])
+
+# 5. AGAKASANDUKU KA AI CHATBOX
+st.markdown("---")
+st.subheader(text["chat_title"])
+st.caption(text["chat_caption"])
+
+gemini_api_key = os.getenv("GEMINI_API_KEY")
+
+if gemini_api_key:
+    genai.configure(api_key=gemini_api_key)
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+
+    for message in st.session_state.chat_history:
+        with st.chat_message(message["role"]):
+            st.write(message["content"])
+
+    if user_question := st.chat_input(text["chat_placeholder"]):
+        with st.chat_message("user"):
+            st.write(user_question)
+        st.session_state.chat_history.append({"role": "user", "content": user_question})
         
-        if records:
-            # Kugaragaza data mu buryo bw'imbonerahamwe ifite Edit na Delete buttons
-            for row in records:
-                col1, col2, col3, col4, col5 = st.columns([2, 2, 4, 1, 1])
-                
-                with col1:
-                    st.write(f"**{row['name']}**")
-                with col2:
-                    st.write(f"*{row['role']}*")
-                with col3:
-                    st.write(row['feedback'])
-                    
-                # 🗑️ BUTO YO GUSIBA (DELETE)
-                with col4:
-                    if st.button("🗑️", key=f"del_{row['id']}"):
-                        supabase.table("stakeholders").delete().eq("id", row['id']).execute()
-                        st.success(f"Deleted row {row['id']}!")
-                        st.rerun()
-                        
-                # ✏️ BUTO YO GUHINDURA (EDIT)
-                with col5:
-                    if st.button("✏️", key=f"edit_btn_{row['id']}"):
-                        st.session_state.editing_row = row['id']
-                        st.rerun()
-                
-                # Niba Admin yakanze Edit, hagenda hafunguka akajambo ko guhindura
-                if st.session_state.editing_row == row['id']:
-                    with st.form(key=f"edit_form_{row['id']}"):
-                        st.write(f"**Editing Record ID: {row['id']}**")
-                        new_name = st.text_input("Edit Name:", value=row['name'])
-                        new_role = st.selectbox("Edit Role:", ["Fish Farmer", "Researcher", "Investor", "Other"], index=["Fish Farmer", "Researcher", "Investor", "Other"].index(row['role']) if row['role'] in ["Fish Farmer", "Researcher", "Investor", "Other"] else 0)
-                        new_feedback = st.text_area("Edit Feedback:", value=row['feedback'])
-                        
-                        save_btn = st.form_submit_button("Save Changes")
-                        cancel_btn = st.form_submit_button("Cancel")
-                        
-                        if save_btn:
-                            update_data = {"name": new_name, "role": new_role, "feedback": new_feedback}
-                            supabase.table("stakeholders").update(update_data).eq("id", row['id']).execute()
-                            st.session_state.editing_row = None
-                            st.success("Record updated successfully!")
-                            st.rerun()
-                        if cancel_btn:
-                            st.session_state.editing_row = None
-                            st.rerun()
-                st.markdown("---")
-        else:
-            st.write("No records found in the database.")
+        try:
+            model = genai.GenerativeModel("gemini-pro")
+            prompt = f"{text['ai_prompt']} {user_question}"
+            response = model.generate_content(prompt)
             
-    except Exception as e:
-        st.error(f"Could not load admin panel: {e}")
+            with st.chat_message("assistant"):
+                st.write(response.text)
+            st.session_state.chat_history.append({"role": "assistant", "content": response.text})
+            
+        except Exception as e:
+            st.error(f"Error: {e}")
+else:
+    st.warning("Please configure GEMINI_API_KEY in Vercel settings.")
