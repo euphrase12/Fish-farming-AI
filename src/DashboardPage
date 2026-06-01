@@ -1,0 +1,130 @@
+import React, { useState } from 'react';
+
+export default function FarmSmartLanding() {
+  const [lang, setLang] = useState('RW'); // Ururimi: RW, GB, FR
+
+  const content = {
+    RW: {
+      heroTitle: "Hindura Ubworozi Ukoresheje AI",
+      heroSub: "Koresha ikoranabuhanga rya AI rigezweho rya Mworozi AI muli Fish-farming-AI mu gukurikirana ubuzima bw'ifi, ubushyuhe n'aside muli pisine zawe.",
+      getStarted: "Tangira Ubworozi",
+      learnMore: "Shaka Amakuru",
+      features: "Ibyiza bya Sisitemu",
+      feature1Title: "Gukurikirana Ubuzima bw'Amazi",
+      feature1Desc: "Gupima pH, Umwuka (Oxygen), n'ubushyuhe muli pisine z'ifi ako kanya.",
+      feature2Title: "Kuzigama Amazi n'Ibiryo",
+      feature2Desc: "Guhagarika gupfusha ubusa amazi n'ibiryo ku kigero cya 40% ukoresheje AI.",
+      testimonial: "Porogaramu ya Fish-farming-AI yahinduye uburyo dukurikirana amafi yacu. Ibyiza byayo byamfashije kongera umusaruro bidasabye abakozi b'inyongezo muli pisine.",
+      author: "Euphrasie M.",
+      role: "Founder, Aquaculture Enterprise"
+    },
+    GB: {
+      heroTitle: "Revolutionize Aquaculture with AI",
+      heroSub: "Harness autonomous AI agents to optimize fish farming, predict yields, and automate water workflows—making aquaculture smarter.",
+      getStarted: "Get Started",
+      learnMore: "Learn More",
+      features: "Features",
+      feature1Title: "Water Quality Monitoring",
+      feature1Desc: "Detect pH, dissolved oxygen, and temperature levels with AI-powered analytics.",
+      feature2Title: "Smart Feeding & Irrigation",
+      feature2Desc: "Reduce feed and water waste by 40% with AI-driven optimization tracking.",
+      testimonial: "Fish-farming-AI transformed how we monitor fish ponds. Real-time insights helped us increase yield significantly without adding field staff.",
+      author: "Euphrasie M.",
+      role: "Founder, Aquaculture Enterprise"
+    }
+  };
+
+  const current = content[lang] || content.RW;
+
+  return (
+    <div className="bg-slate-950 text-slate-100 min-h-screen font-sans">
+      {/* Navigation Bar */}
+      <nav className="flex justify-between items-center p-6 border-b border-slate-800 bg-slate-900 sticky top-0 z-50">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">🐟</span>
+          <span className="text-xl font-black text-emerald-400 tracking-wider">Fish-farming-AI</span>
+        </div>
+        <div className="hidden md:flex gap-6 text-sm text-slate-400">
+          <a href="#features" className="hover:text-white transition">Features</a>
+          <a href="#pricing" className="hover:text-white transition">Pricing</a>
+          <a href="#testimonials" className="hover:text-white transition">Testimonials</a>
+        </div>
+        <div className="flex items-center gap-4">
+          <select 
+            value={lang} 
+            onChange={(e) => setLang(e.target.value)}
+            className="bg-slate-800 text-white border border-slate-700 rounded px-2 py-1 text-sm outline-none"
+          >
+            <option value="RW">RW (Kinyarwanda)</option>
+            <option value="GB">GB (English)</option>
+          </select>
+          <button className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs px-4 py-2 rounded-full transition shadow-lg shadow-emerald-500/20">
+            Try for Free
+          </button>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="max-w-5xl mx-auto text-center px-6 py-20 md:py-32 flex flex-col items-center gap-6">
+        <h1 className="text-4xl md:text-6xl font-black bg-gradient-to-r from-white via-slate-200 to-emerald-400 bg-clip-text text-transparent leading-tight max-w-3xl">
+          {current.heroTitle}
+        </h1>
+        <p className="text-slate-400 text-base md:text-lg max-w-2xl leading-relaxed">
+          {current.heroSub}
+        </p>
+        <div className="flex gap-4 mt-4">
+          <button className="bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black px-8 py-3 rounded-xl hover:opacity-90 transition shadow-xl shadow-emerald-500/10 flex items-center gap-2">
+            ✧ {current.getStarted}
+          </button>
+          <button className="border border-slate-700 hover:bg-slate-900 text-slate-300 font-bold px-6 py-3 rounded-xl transition">
+            {current.learnMore}
+          </button>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="max-w-6xl mx-auto px-6 py-16 border-t border-slate-900">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl md:text-3xl font-black text-white">{current.features}</h2>
+          <p className="text-slate-500 text-sm mt-2">Powering the future of aquaculture automation</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Card 1 */}
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl relative overflow-hidden group hover:border-emerald-500/50 transition">
+            <div className="text-3xl mb-4">🌱</div>
+            <h3 className="text-xl font-bold text-slate-200 mb-2">{current.feature1Title}</h3>
+            <p className="text-slate-400 text-sm leading-relaxed">{current.feature1Desc}</p>
+            <div className="mt-4 text-xs font-mono text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded w-fit">
+              ✓ Real-time Dashboard Sync
+            </div>
+          </div>
+
+          {/* Card 2 */}
+          <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl relative overflow-hidden group hover:border-emerald-500/50 transition">
+            <div className="text-3xl mb-4">🤖</div>
+            <h3 className="text-xl font-bold text-slate-200 mb-2">{current.feature2Title}</h3>
+            <p className="text-slate-400 text-sm leading-relaxed">{current.feature2Desc}</p>
+            <div className="mt-4 text-xs font-mono text-teal-400 bg-teal-500/10 px-3 py-1 rounded w-fit">
+              ✓ Smart Water Optimization
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section id="testimonials" className="bg-slate-900/50 border-t border-b border-slate-900 py-16 px-6">
+        <div className="max-w-4xl mx-auto text-center flex flex-col items-center gap-6">
+          <span className="text-emerald-400 text-4xl">“</span>
+          <p className="text-lg md:text-xl text-slate-300 italic max-w-3xl leading-relaxed">
+            {current.testimonial}
+          </p>
+          <div className="mt-4">
+            <h4 className="text-white font-bold">{current.author}</h4>
+            <p className="text-xs text-slate-500 font-mono mt-1">{current.role}</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
