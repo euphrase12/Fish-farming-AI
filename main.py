@@ -87,9 +87,10 @@ else:
                 # 🗑️ BUTO YO GUSIBA (DELETE)
                 with col4:
                     if st.button("🗑️", key=f"del_{row['id']}"):
-                        supabase.table("stakeholders").delete().eq("id", row['id']).execute()
-                        st.success(f"Deleted row {row['id']}!")
-                        st.rerun()
+                        with st.spinner('Deleting record...'): 
+                            supabase.table("stakeholders").delete().eq("id", row['id']).execute()
+                            st.success(f"Deleted row {row['id']}!")
+                            st.rerun()
                         
                 # ✏️ BUTO YO GUHINDURA (EDIT)
                 with col5:
