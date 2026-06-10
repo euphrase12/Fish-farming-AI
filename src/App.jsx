@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
-const STORAGE_KEY = 'aiFoundersToolkitEntries';
+const STORAGE_KEY = 'feedback_records';
+const ETHICS_STORAGE_KEY = 'ethics_data';
 
 export default function App() {
   const [problem, setProblem] = useState('');
@@ -12,6 +13,9 @@ export default function App() {
   const [s2Aspects, setS2Aspects] = useState('');
   const [s2Questions, setS2Questions] = useState('');
   const [s2Missing, setS2Missing] = useState('');
+  const [interviewName, setInterviewName] = useState('');
+  const [interviewDate, setInterviewDate] = useState('');
+  const [interviewInsights, setInterviewInsights] = useState('');
   const [entries, setEntries] = useState(() => {
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
@@ -20,6 +24,38 @@ export default function App() {
       return [];
     }
   });
+  const [ethicsData, setEthicsData] = useState(() => {
+    try {
+      const saved = window.localStorage.getItem(ETHICS_STORAGE_KEY);
+      return saved
+        ? JSON.parse(saved)
+        : {
+            commitment: '',
+            items: {
+              doNoHarm: false,
+              biasFairness: false,
+              privacyDataSecurity: false,
+              humanOversight: false,
+              transparency: false,
+              accessibility: false,
+            },
+          };
+    } catch (error) {
+      return {
+        commitment: '',
+        items: {
+          doNoHarm: false,
+          biasFairness: false,
+          privacyDataSecurity: false,
+          humanOversight: false,
+          transparency: false,
+          accessibility: false,
+        },
+      };
+    }
+  });
+
+  const allEthicsSelected = Object.values(ethicsData.items).every(Boolean);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -40,6 +76,11 @@ export default function App() {
         questions: s2Questions.trim(),
         missing: s2Missing.trim(),
       },
+      interview: {
+        name: interviewName.trim(),
+        date: interviewDate.trim(),
+        insights: interviewInsights.trim(),
+      },
     };
 
     setEntries([entry, ...entries]);
@@ -52,6 +93,9 @@ export default function App() {
     setS2Aspects('');
     setS2Questions('');
     setS2Missing('');
+    setInterviewName('');
+    setInterviewDate('');
+    setInterviewInsights('');
   };
 
   useEffect(() => {
@@ -61,6 +105,14 @@ export default function App() {
       console.error('Could not save entries to localStorage', error);
     }
   }, [entries]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(ETHICS_STORAGE_KEY, JSON.stringify(ethicsData));
+    } catch (error) {
+      console.error('Could not save ethics data to localStorage', error);
+    }
+  }, [ethicsData]);
 
   const renderStakeholderSection = (
     title,
@@ -159,6 +211,62 @@ export default function App() {
             )}
           </div>
 
+          <div className="space-y-4 rounded-3xl border border-gray-200 bg-gray-50 p-5 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Ethical Action Plan</h3>
+                <p className="mt-1 text-sm text-slate-500">Capture your commitment and track the core responsible AI principles for this project.</p>
+              </div>
+              <span
+                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                  allEthicsSelected ? 'bg-emerald-100 text-emerald-800' : 'bg-yellow-100 text-yellow-800'
+                }`}
+              >
+                {allEthicsSelected ? 'Ethics Compliant' : 'Ethics checklist pending'}
+              </span>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Project Ethical Commitment</label>
+              <textarea
+                value={ethicsData.commitment}
+                onChange={(e) => setEthicsData((prev) => ({ ...prev, commitment: e.target.value }))}
+                rows="4"
+                placeholder="Describe your commitment to responsible AI and ethical development."
+                className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              />
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[
+                { key: 'doNoHarm', label: 'Do No Harm' },
+                { key: 'biasFairness', label: 'Bias & Fairness' },
+                { key: 'privacyDataSecurity', label: 'Privacy & Data Security' },
+                { key: 'humanOversight', label: 'Human Oversight' },
+                { key: 'transparency', label: 'Transparency' },
+                { key: 'accessibility', label: 'Accessibility' },
+              ].map((item) => (
+                <label key={item.key} className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm transition hover:border-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={ethicsData.items[item.key]}
+                    onChange={() =>
+                      setEthicsData((prev) => ({
+                        ...prev,
+                        items: {
+                          ...prev.items,
+                          [item.key]: !prev.items[item.key],
+                        },
+                      }))
+                    }
+                    className="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="leading-5">{item.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           <div className="pt-1">
             <button
               type="submit"
@@ -222,6 +330,24 @@ export default function App() {
                         <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Missing</p>
                         <p className="mt-1 text-slate-800">{entry.stakeholder2.missing || '—'}</p>
                       </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-sm font-semibold text-slate-900">Stakeholder Interview</p>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Name</p>
+                        <p className="mt-1 text-slate-800">{entry.interview.name || '—'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Date</p>
+                        <p className="mt-1 text-slate-800">{entry.interview.date || '—'}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Key observations / insights</p>
+                      <p className="mt-1 text-slate-800">{entry.interview.insights || '—'}</p>
                     </div>
                   </div>
                 </div>
