@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
+const STORAGE_KEY = 'aiFoundersToolkitEntries';
 
 export default function App() {
   const [problem, setProblem] = useState('');
@@ -10,7 +12,14 @@ export default function App() {
   const [s2Aspects, setS2Aspects] = useState('');
   const [s2Questions, setS2Questions] = useState('');
   const [s2Missing, setS2Missing] = useState('');
-  const [entries, setEntries] = useState([]);
+  const [entries, setEntries] = useState(() => {
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+      return [];
+    }
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -44,6 +53,14 @@ export default function App() {
     setS2Questions('');
     setS2Missing('');
   };
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    } catch (error) {
+      console.error('Could not save entries to localStorage', error);
+    }
+  }, [entries]);
 
   const renderStakeholderSection = (
     title,
