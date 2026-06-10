@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { WaterTelemetryDashboard } from '../features/WaterTelemetry/index.js';
+import FeedbackAnalyzer from '../components/FeedbackAnalyzer.jsx';
 
 export default function DashboardPage({ sensorData, refreshSensors, onAnalyze, aiAdvice, onLogout }) {
   const [showLegacy, setShowLegacy] = useState(false);
@@ -50,10 +51,24 @@ export default function DashboardPage({ sensorData, refreshSensors, onAnalyze, a
             </button>
           </div>
 
-          {/* Advice Section */}
+          {/* Tabs: Telemetry / Feedback Analyzer */}
+          <div className="mb-6 flex items-center gap-3">
+            <button onClick={() => setShowLegacy(true)} className="text-sm px-3 py-2 rounded-full bg-emerald-900/30 text-emerald-300">Telemetry</button>
+            <button onClick={() => { /* we'll render feedback analyzer below */ }} className="text-sm px-3 py-2 rounded-full bg-emerald-900/30 text-emerald-300" onClickCapture={(e)=>{e.preventDefault(); document.getElementById('feedback-analyzer-btn')?.click();}} id="feedback-tab-btn">Feedback Analyzer</button>
+          </div>
+
+          {/* Advice Section or Feedback Analyzer (tabbed) */}
           <div className="bg-[#0b140f] p-8 rounded-2xl border border-emerald-900/40">
             <h2 className="text-lg font-bold text-white mb-4">🤖 AI Operational Insights</h2>
-            <p className="text-slate-300 text-sm leading-relaxed">{aiAdvice}</p>
+            <div>
+              <div id="feedback-analyzer-btn" style={{display: 'none'}} />
+              {/* Show the telemetry AI advice by default */}
+              <div className="text-slate-300 text-sm leading-relaxed">{aiAdvice}</div>
+              {/* FeedbackAnalyzer placed below the existing advice for visibility */}
+              <div className="mt-6">
+                <FeedbackAnalyzer />
+              </div>
+            </div>
           </div>
         </div>
       ) : (

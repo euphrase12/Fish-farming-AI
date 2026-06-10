@@ -133,5 +133,42 @@ app.post('/api/analyze', async (req, res) => {
     }
 });
 
+// 🌐 Feedback analysis endpoint using Google Gemini (server-side proxy)
+app.post('/api/feedback-analyze', async (req, res) => {
+    try {
+        const { feedbackRecords } = req.body;
+        const apiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+        if (!apiKey) return res.status(500).json({ error: 'Gemini API key not configured on server.' });
+
+        const combined = Array.isArray(feedbackRecords)
+            ? feedbackRecords.map((r) => (typeof r === 'string' ? r : JSON.stringify(r))).join('\n\n')
+            : String(feedbackRecords || '');
+
+        const promptText = `Analyze this fish farming / aquaculture telemetry feedback. Spot key trends, hidden risks regarding water parameters (oxygen, pH, temperature), and give actionable recommendations for the MVP.\n\nFeedback records:\n${combined}`;
+
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta2/models/gemini-1.5-flash:generate?key=${encodeURIComponent(apiKey)}`;
+
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                prompt: { text: promptText },
+                temperature: 0.2,
+                maxOutputTokens: 800
+            }),
+        });
+
+        const data = await response.json();
+
+        // Attempt to extract text from typical response shapes
+        const text = (data?.candidates && data.candidates[0]?.content) || data?.output?.[0]?.content || data?.result || JSON.stringify(data);
+
+        res.json({ text });
+    } catch (error) {
+        console.error('Feedback analyze error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
