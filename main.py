@@ -1,4 +1,5 @@
 import streamlit as st
+import './index.css';
 from supabase import create_client, Client
 
 # Gufungura Supabase Credentials binyuze muri Secrets za Streamlit
